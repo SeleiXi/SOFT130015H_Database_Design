@@ -17,8 +17,8 @@ java -jar target/database-import-0.0.1-SNAPSHOT.jar
 
 ## 运行截图
 
-[](DB_SAMPLE_1.jpg)
-[](DB_SAMPLE_2.jpg)
+[](./DB_SAMPLE_1.jpg)
+[](./DB_SAMPLE_2.jpg)
 
 ---
 ## 说明
