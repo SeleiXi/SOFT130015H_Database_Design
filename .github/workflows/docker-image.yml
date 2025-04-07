@@ -1,0 +1,29 @@
+name: Build and Push Docker Image for the Java Maven project
+
+on:
+  push:
+    branches: [main,Lab2,Lab3]
+  pull_request:
+    branches: [main,Lab2,Lab3]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+        
+      - name: Log in to Docker Hub
+        uses: docker/login-action@master
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          
+      - name: Build and push
+        uses: docker/build-push-action@master
+        with:
+          context: .
+          push: true
+          tags: |
+            seleixi/soft130015h:${{ github.sha }}
+            seleixi/soft130015h:latest
