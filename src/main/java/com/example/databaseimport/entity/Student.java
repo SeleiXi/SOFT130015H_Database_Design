@@ -1,8 +1,5 @@
 package com.example.databaseimport.entity;
 
-import lombok.Data;
-
-@Data
 public class Student {
     // 以下注释是根据给的文档写的
     private String registno;  // 考号
