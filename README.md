@@ -6,8 +6,8 @@
 
 1. Docker
 ```shell
-docker pull seleixi/soft130059:latest
-docker run -it seleixi/soft130059:latest
+docker pull seleixi/soft130015h:latest
+docker run -it seleixi/soft130015h:latest
 ```
 2. Maven
 ```shell
@@ -16,7 +16,9 @@ java -jar target/database-import-0.0.1-SNAPSHOT.jar
 ```
 
 ## 运行截图
-见本文件根目录，或者 https://github.com/SeleiXi/FDU-SOFT130059-Object-Oriented-Programming 的README
+
+[](DB_SAMPLE_1.jpg)
+[](DB_SAMPLE_2.jpg)
 
 ---
 ## 说明
