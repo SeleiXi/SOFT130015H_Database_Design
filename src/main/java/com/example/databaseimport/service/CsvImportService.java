@@ -3,22 +3,24 @@ package com.example.databaseimport.service;
 import com.example.databaseimport.model.TableDefinition;
 import com.example.databaseimport.model.TableDefinition.ColumnDefinition;
 import com.example.databaseimport.model.TableDefinition.ForeignKeyDefinition;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class CsvImportService {
-
+    
+    private static final Logger log = LoggerFactory.getLogger(CsvImportService.class);
     private final DynamicCsvImportService dynamicCsvImportService;
+
+    public CsvImportService(DynamicCsvImportService dynamicCsvImportService) {
+        this.dynamicCsvImportService = dynamicCsvImportService;
+    }
 
     @Transactional
     public void initializeDatabase(String roomCsvPath, String studentCsvPath) {

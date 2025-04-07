@@ -4,8 +4,8 @@ import com.example.databaseimport.model.TableDefinition;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +17,16 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class DynamicCsvImportService {
 
+    private static final Logger log = LoggerFactory.getLogger(DynamicCsvImportService.class);
     private final JdbcTemplate jdbcTemplate;
     private static final int BATCH_SIZE = 1000;
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    public DynamicCsvImportService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     /**
      * 从CSV文件导入数据到数据库表
