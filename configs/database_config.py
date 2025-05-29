@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-数据库配置文件
-支持从环境变量读取配置，避免硬编码
-"""
-
 import os
 from typing import Dict, Any
 
 def get_database_config() -> Dict[str, Any]:
-    """
-    获取数据库配置
-    优先级：环境变量 > 默认值
-    """
     return {
         'host': os.getenv('DB_HOST', 'localhost'),
         'user': os.getenv('DB_USER', 'root'),

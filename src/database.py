@@ -12,15 +12,6 @@ try:
 except ImportError as e:
     print(f"❌ 无法导入配置文件: {e}")
     print("请确保 configs/database_config.py 文件存在")
-    # 使用默认配置作为后备
-    DB_CONFIG = {
-        'host': 'localhost',
-        'user': 'root',
-        'password': 'root',
-        'database': 'db_design_pj',
-        'port': 3306,
-        'charset': 'utf8mb4'
-    }
 
 def get_connection():
     """建立数据库连接"""
@@ -217,17 +208,15 @@ def get_table_data(table_name):
         return False, "数据库连接失败"
     
     try:
-        cursor = conn.cursor(buffered=True)  # 使用buffered=True避免"Unread result found"错误
+        cursor = conn.cursor(buffered=True)  # 使用buffered=True避免"Unread result found"报错
         query = f"SELECT * FROM {table_name}"
         cursor.execute(query)
         
-        # 获取列名
         columns = [column[0] for column in cursor.description]
         
-        # 获取所有数据
         result = cursor.fetchall()
         
-        # 创建DataFrame（不管有没有数据都能正确创建）
+        # 不管有没有数据都能正确创建
         df = pd.DataFrame(result, columns=columns)
         
         return True, df
