@@ -1,22 +1,50 @@
 import mysql.connector
 from mysql.connector import Error
 import pandas as pd
+import sys
+import os
 
-# 数据库连接配置
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',  # 请修改为你的实际密码
-    'database': 'db_design_pj',  # 请修改为你的实际数据库名
-}
+# 添加 configs 目录到路径
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'configs'))
+
+try:
+    from database_config import DB_CONFIG, validate_config, print_config_info
+except ImportError as e:
+    print(f"❌ 无法导入配置文件: {e}")
+    print("请确保 configs/database_config.py 文件存在")
+    # 使用默认配置作为后备
+    DB_CONFIG = {
+        'host': 'localhost',
+        'user': 'root',
+        'password': 'root',
+        'database': 'db_design_pj',
+        'port': 3306,
+        'charset': 'utf8mb4'
+    }
 
 def get_connection():
     """建立数据库连接"""
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
+        # 验证配置
+        if 'validate_config' in globals() and not validate_config():
+            print("❌ 配置验证失败")
+            return None
+        
+        # 创建连接，只使用 mysql.connector.connect 支持的参数
+        connect_config = {
+            'host': DB_CONFIG['host'],
+            'user': DB_CONFIG['user'],
+            'password': DB_CONFIG['password'],
+            'database': DB_CONFIG['database'],
+            'port': DB_CONFIG.get('port', 3306),
+            'charset': DB_CONFIG.get('charset', 'utf8mb4'),
+            'autocommit': DB_CONFIG.get('autocommit', True)
+        }
+        
+        conn = mysql.connector.connect(**connect_config)
         return conn
     except Error as e:
-        print(f"数据库连接错误: {e}")
+        print(f"❌ 数据库连接错误: {e}")
         return None
 
 def execute_query(query, params=None, fetch=False):
@@ -28,7 +56,7 @@ def execute_query(query, params=None, fetch=False):
         return False, "数据库连接失败"
     
     try:
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)  # 使用buffered=True避免"Unread result found"错误
         if params:
             cursor.execute(query, params)
         else:
@@ -184,51 +212,29 @@ def get_table_names():
 
 def get_table_data(table_name):
     """获取指定表的所有数据"""
-    query = f"SELECT * FROM {table_name}"
-    success, result = execute_query(query, fetch=True)
+    conn = get_connection()
+    if conn is None:
+        return False, "数据库连接失败"
     
-    if success and result:
+    try:
+        cursor = conn.cursor(buffered=True)  # 使用buffered=True避免"Unread result found"错误
+        query = f"SELECT * FROM {table_name}"
+        cursor.execute(query)
+        
         # 获取列名
-        conn = get_connection()
-        if conn is None:
-            return False, "数据库连接失败"
+        columns = [column[0] for column in cursor.description]
         
-        try:
-            cursor = conn.cursor()
-            cursor.execute(query)
-            columns = [column[0] for column in cursor.description]
-            cursor.close()
-            conn.close()
-            
-            # 创建DataFrame
-            df = pd.DataFrame(result, columns=columns)
-            return True, df
-        except Error as e:
-            if conn.is_connected():
-                conn.close()
-            return False, f"获取列名失败: {e}"
-    
-    elif success and not result:
-        # 查询成功但没有数据，返回空的DataFrame
-        conn = get_connection()
-        if conn is None:
-            return False, "数据库连接失败"
+        # 获取所有数据
+        result = cursor.fetchall()
         
-        try:
-            cursor = conn.cursor()
-            cursor.execute(query)
-            columns = [column[0] for column in cursor.description]
+        # 创建DataFrame（不管有没有数据都能正确创建）
+        df = pd.DataFrame(result, columns=columns)
+        
+        return True, df
+        
+    except Error as e:
+        return False, f"查询执行错误: {e}"
+    finally:
+        if conn.is_connected():
             cursor.close()
-            conn.close()
-            
-            # 创建空的DataFrame
-            df = pd.DataFrame(columns=columns)
-            return True, df
-        except Error as e:
-            if conn.is_connected():
-                conn.close()
-            return False, f"获取列名失败: {e}"
-    
-    else:
-        # 查询失败
-        return False, result 
+            conn.close() 

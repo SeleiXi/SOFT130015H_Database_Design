@@ -20,11 +20,32 @@ conda activate db_design
 pip install -r requirements.txt
 ```
 
+
+## Config
+
+#### 方法1：环境变量（推荐）
+```bash
+export DB_HOST=localhost
+export DB_USER=root
+export DB_PASSWORD=your_password
+export DB_NAME=db_design_pj
+```
+
+#### 方法2：.env 文件
+1. 复制配置示例：
+```bash
+cp configs/config_example.env .env
+```
+
+2. 编辑 `.env` 文件修改你的配置
+
+
 2. 配置数据库连接：
+建立数据库（如database_pj）
+使用环境变量或创建 `.env` 文件（参考上面的配置系统）。
 
-修改 `src/database.py` 中的数据库连接参数。
 
-3. 运行应用：
+4. 启动：
 
 ```bash
 streamlit run ./src/app.py
@@ -35,4 +56,21 @@ streamlit run ./src/app.py
 - Python
 - Streamlit
 - MySQL
-- 原生SQL（无ORM） 
+- 原生SQL（无ORM）
+- 原生SQL（无ORM）
+- 环境变量配置管理
+
+## 环境变量说明
+
+### 数据库配置
+- `DB_HOST`: 数据库主机地址（默认：localhost）
+- `DB_USER`: 数据库用户名（默认：root）
+- `DB_PASSWORD`: 数据库密码（默认：root）
+- `DB_NAME`: 数据库名称（默认：db_design_pj）
+- `DB_PORT`: 数据库端口（默认：3306）
+- `DB_CHARSET`: 字符集（默认：utf8mb4）
+
+### 应用配置
+- `APP_DEBUG`: 调试模式（默认：False）
+- `STREAMLIT_PORT`: Streamlit端口（默认：8501）
+- `STREAMLIT_HOST`: Streamlit主机（默认：localhost） 
