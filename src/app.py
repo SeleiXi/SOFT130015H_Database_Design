@@ -90,21 +90,23 @@ if menu == "📊 数据库管理":
             if st.button("🔍 一键查询", key="view_table_schema"):
                 tables = get_table_names()
                 if tables:
-                    # 把这一句持久化
-                    tables_num = len(tables)
-                    st.info(f"📑 当前数据库表数量: {tables_num}")
+                    st.info(f"📑 当前数据库表数量: {len(tables)}")
                 else:
                     st.warning("⚠️ 数据库中没有表")
         
         with col2:
             # 表信息统计
-            st.metric("数据库表总数", tables_num)
+            tables = get_table_names()
+            st.metric("数据库表总数", len(tables) if tables else 0)
     
     with tab2:
         st.subheader("数据查看")
         
         # 获取所有表名
-        if not tables_num:
+        tables = get_table_names()
+        tables_count = len(tables) if tables else 0
+        
+        if not tables_count:
             st.info("ℹ️ 数据库中没有表或无法连接到数据库")
         else:
             col1, col2 = st.columns([3, 1])
@@ -223,8 +225,9 @@ elif menu == "🔍 LLM评估":
         st.markdown("### 📌 评估范围")
         
         eval_option = st.radio(
-            "",
-            ["📑 评估所有标准问答对", "🏷️ 评估特定标签的问答对", "🔍 评估特定问题ID"]
+            "评估范围选项",
+            ["📑 评估所有标准问答对", "🏷️ 评估特定标签的问答对", "🔍 评估特定问题ID"],
+            label_visibility="collapsed"
         )
         
         if eval_option == "🏷️ 评估特定标签的问答对":
@@ -294,13 +297,18 @@ elif menu == "📥 数据导入":
             if import_option == "📄 CSV文件导入":
                 col1, col2 = st.columns(2)
                 with col1:
-                    target_table = st.selectbox("📊 目标表", get_table_names())
+                    available_tables = get_table_names()
+                    if available_tables:
+                        target_table = st.selectbox("📊 目标表", available_tables)
+                    else:
+                        st.warning("⚠️ 数据库中没有可用的表")
+                        target_table = None
                 with col2:
                     has_header = st.checkbox("✅ 包含表头", value=True)
                 
                 encoding = st.selectbox("文件编码", ["UTF-8", "GBK", "ISO-8859-1"], index=0)
                 delimiter = st.selectbox("分隔符", [",", ";", "\\t", "|"], index=0)
-                
+            
             elif import_option == "📋 JSON文件导入":
                 auto_mapping = st.checkbox("✅ 自动映射字段", value=True)
                 

@@ -7,7 +7,7 @@ DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
     'password': 'root',  # 请修改为你的实际密码
-    'database': 'llm_qa_eval',  # 请修改为你的实际数据库名
+    'database': 'db_design_pj',  # 请修改为你的实际数据库名
 }
 
 def get_connection():
@@ -187,20 +187,48 @@ def get_table_data(table_name):
     query = f"SELECT * FROM {table_name}"
     success, result = execute_query(query, fetch=True)
     
-    if success:
+    if success and result:
         # 获取列名
         conn = get_connection()
         if conn is None:
             return False, "数据库连接失败"
         
-        cursor = conn.cursor()
-        cursor.execute(query)
-        columns = [column[0] for column in cursor.description]
-        cursor.close()
-        conn.close()
-        
-        # 创建DataFrame
-        df = pd.DataFrame(result, columns=columns)
-        return True, df
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            columns = [column[0] for column in cursor.description]
+            cursor.close()
+            conn.close()
+            
+            # 创建DataFrame
+            df = pd.DataFrame(result, columns=columns)
+            return True, df
+        except Error as e:
+            if conn.is_connected():
+                conn.close()
+            return False, f"获取列名失败: {e}"
     
-    return False, result 
+    elif success and not result:
+        # 查询成功但没有数据，返回空的DataFrame
+        conn = get_connection()
+        if conn is None:
+            return False, "数据库连接失败"
+        
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            columns = [column[0] for column in cursor.description]
+            cursor.close()
+            conn.close()
+            
+            # 创建空的DataFrame
+            df = pd.DataFrame(columns=columns)
+            return True, df
+        except Error as e:
+            if conn.is_connected():
+                conn.close()
+            return False, f"获取列名失败: {e}"
+    
+    else:
+        # 查询失败
+        return False, result 
