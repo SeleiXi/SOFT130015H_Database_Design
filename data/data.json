@@ -1,0 +1,90 @@
+{
+  "ori_qs": [
+    {"content": "What is the capital of France? (Sample from data.json)"},
+    {"content": "How does photosynthesis work? (Sample from data.json)"}
+  ],
+  "tags": [
+    {"name": "Geography"},
+    {"name": "Biology"},
+    {"name": "SampleTag"}
+  ],
+  "original_ans": [
+    {"content": "The capital of France is Paris. (Sample from data.json)"},
+    {"content": "Photosynthesis is the process by which green plants use sunlight, water, and carbon dioxide to create their own food. (Sample from data.json)"}
+  ],
+  "llm_type": [
+    {"name": "GPT-3.5-Turbo-Instruct", "params": 175000000000, "costs_per_million_token": 1.50},
+    {"name": "Claude 3 Haiku", "params": 20000000000, "costs_per_million_token": 0.25},
+    {"name": "Llama 3 8B", "params": 8000000000, "costs_per_million_token": 0.30}
+  ],
+  "user": [
+    {"name": "Default Admin", "role": "admin"},
+    {"name": "John Doe", "role": "evaluator"},
+    {"name": "Jane Smith", "role": "guest"}
+  ],
+  "updated_content": [
+    {
+      "content": "Updated version of the France capital answer",
+      "operation": "EDIT"
+    },
+    {
+      "content": "Updated version of the photosynthesis answer",
+      "operation": "EDIT"
+    }
+  ],
+  "standard_ans": [
+    {
+      "ans_content": "Paris is the capital of France. It is known as the City of Light.",
+      "ori_ans_id": 1,
+      "updated_content_version": 1
+    },
+    {
+      "ans_content": "Photosynthesis is a complex process where plants convert light energy into chemical energy.",
+      "ori_ans_id": 2,
+      "updated_content_version": 2
+    }
+  ],
+  "llm_evaluation": [
+    {
+      "llm_answer": "The answer about Paris is accurate and comprehensive.",
+      "llm_type_id": 1,
+      "std_ans_id": 1,
+      "llm_score": 4.75
+    },
+    {
+      "llm_answer": "The explanation of photosynthesis is clear and scientifically accurate.",
+      "llm_type_id": 2,
+      "std_ans_id": 2,
+      "llm_score": 4.80
+    }
+  ],
+  "standard_qs": [
+    {
+      "content": "What is the capital of France and what is it known for?",
+      "ori_qs_id": 1,
+      "tag_id": 1,
+      "updated_content_version": 1
+    },
+    {
+      "content": "Explain the process of photosynthesis in detail.",
+      "ori_qs_id": 2,
+      "tag_id": 2,
+      "updated_content_version": 2
+    }
+  ],  "standard_pair": [
+    {
+      "pair_id": 1,
+      "std_qs_id": 1,
+      "std_ans_id": 1,
+      "eval_id": 2,
+      "updated_content_version": 2
+    },
+    {
+      "pair_id": 2,
+      "std_qs_id": 2,
+      "std_ans_id": 2,
+      "eval_id": 2,
+      "updated_content_version": 2
+    }
+  ]
+}

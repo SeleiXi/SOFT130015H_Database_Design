@@ -38,7 +38,7 @@ def get_connection():
         print(f"❌ 数据库连接错误: {e}")
         return None
 
-def execute_query(query, params=None, fetch=False):
+def execute_query(query, params=None, fetch=False, many=False):
     """执行SQL查询"""
     conn = get_connection()
     result = None
@@ -48,7 +48,9 @@ def execute_query(query, params=None, fetch=False):
     
     try:
         cursor = conn.cursor(buffered=True)  # 使用buffered=True避免"Unread result found"错误
-        if params:
+        if many:  # 新增批量操作分支
+            cursor.executemany(query, params)
+        elif params:
             cursor.execute(query, params)
         else:
             cursor.execute(query)
@@ -226,4 +228,97 @@ def get_table_data(table_name):
     finally:
         if conn.is_connected():
             cursor.close()
+            conn.close() 
+
+def batch_import_json_data(json_data_dict):
+    """
+    从解析后的JSON数据字典批量导入数据到多个表。
+    json_data_dict: 格式为 {"table_name": [list_of_records]} 的字典。
+                    每个 record 是一个字段名:值的字典。
+    返回: 一个包含各表导入结果的字典。
+    """
+    results = {}
+    conn = None 
+    cursor = None
+    try:
+        conn = get_connection()
+        if not conn:
+            return {"error": "数据库连接失败"}
+
+        cursor = conn.cursor(buffered=True)
+        # It's better to get table names once if this function is called multiple times
+        # or pass them if already available to avoid repeated DB calls.
+        # For now, fetching them inside for atomicity of this function.
+        db_name = DB_CONFIG.get('database')
+        if not db_name:
+            return {"error": "数据库名称未在配置中找到"}
+
+        query_tables = "SELECT table_name FROM information_schema.tables WHERE table_schema = %s"
+        cursor.execute(query_tables, (db_name,))
+        available_tables_rows = cursor.fetchall()
+        available_tables = [row[0] for row in available_tables_rows]
+
+        for table_name, records in json_data_dict.items():
+            if table_name not in available_tables:
+                results[table_name] = {"success": False, "message": f"表 {table_name} 在数据库中不存在，跳过。", "inserted_count": 0, "skipped": True}
+                continue
+            
+            if not isinstance(records, list) or not records:
+                results[table_name] = {"success": True, "message": f"表 {table_name} 没有数据或数据格式不正确，跳过。", "inserted_count": 0, "skipped": True}
+                continue
+
+            # 获取目标表结构以确定有效列
+            cursor.execute(f"SELECT * FROM `{table_name}` LIMIT 0") # Use backticks for table name
+            table_columns = [desc[0] for desc in cursor.description]
+            
+            rows_to_insert = []
+            valid_columns_for_insert = []
+
+            # Determine columns for INSERT from the first record, ensuring they exist in the table
+            if records and isinstance(records[0], dict):
+                first_record_keys = [key for key in records[0].keys() if key in table_columns]
+                if not first_record_keys:
+                    results[table_name] = {"success": False, "message": f"表 {table_name} 的JSON数据中没有与表列匹配的字段。", "inserted_count": 0}
+                    continue
+                valid_columns_for_insert = first_record_keys
+            else:
+                results[table_name] = {"success": False, "message": f"表 {table_name} 的记录不是字典格式或为空。", "inserted_count": 0}
+                continue
+                
+            placeholders = ", ".join(["%s"] * len(valid_columns_for_insert))
+            # Use backticks for table and column names to handle special characters or reserved words
+            sql_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in valid_columns_for_insert])}) VALUES ({placeholders})"
+
+            for record in records:
+                if isinstance(record, dict):
+                    row_values = [record.get(col) for col in valid_columns_for_insert]
+                    rows_to_insert.append(tuple(row_values))
+                else:
+                    # Skip non-dict records or log them
+                    pass # Or add to a list of skipped records for this table
+            
+            if not rows_to_insert:
+                results[table_name] = {"success": True, "message": f"表 {table_name} 的JSON数据处理后没有可导入的行。", "inserted_count": 0, "skipped": False}
+                continue
+
+            try:
+                # MySQL autocommits executemany by default if autocommit is True for the connection
+                cursor.executemany(sql_query, rows_to_insert)
+                # No explicit conn.commit() needed here if autocommit=True, but doesn't hurt for clarity or if autocommit is False.
+                conn.commit() 
+                inserted_count = cursor.rowcount if cursor.rowcount != -1 else len(rows_to_insert)
+                results[table_name] = {"success": True, "message": f"成功导入 {inserted_count} 条记录。", "inserted_count": inserted_count}
+            except Error as e:
+                conn.rollback()
+                results[table_name] = {"success": False, "message": f"导入时发生错误: {str(e)}", "inserted_count": 0, "errors": [str(e)]}
+            
+        return results
+
+    except Error as e:
+        # General error not specific to a table import
+        return {"error": f"数据库操作错误: {e}"}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
             conn.close() 
