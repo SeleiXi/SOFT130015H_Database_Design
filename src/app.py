@@ -216,115 +216,440 @@ elif menu == "🔍 智能查询":
         # 设置每页显示条数
         page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="basic_page_size")
         
-        col1, col2, col3 = st.columns(3)
+        st.markdown("---")
         
-        with col1:
-            if st.button("📝 查看所有问题答案", key="all_qa"):
-                if "all_qa_page" not in st.session_state:
-                    st.session_state.all_qa_page = 1
+        # 第一个查询：查看所有问题答案
+        st.markdown("### 📝 查看所有问题答案")
+        st.markdown("*查询原始问题及其对应的原始答案和标准答案*")
+        
+        if st.button("🚀 开始查询", key="all_qa", use_container_width=True):
+            if "all_qa_page" not in st.session_state:
+                st.session_state.all_qa_page = 1
+            
+            with st.spinner("🔍 正在查询问题和答案..."):
+                success, message, total_count, results, total_pages = get_all_questions_with_answers(
+                    st.session_state.all_qa_page, page_size
+                )
                 
-                with st.spinner("查询中..."):
-                    success, message, total_count, results, total_pages = get_all_questions_with_answers(
-                        st.session_state.all_qa_page, page_size
-                    )
+                if success:
+                    st.success(f"✅ {message} - 找到 {total_count} 条记录")
                     
-                    if success:
-                        st.success(f"✅ {message}")
-                        columns = ["问题内容", "原答案内容",  "标准答案内容"]
-                        display_query_results(results, columns, "all_qa", total_count, total_pages, st.session_state.all_qa_page)
+                    if results:
+                        columns = ["问题内容", "原答案内容", "标准答案内容"]
+                        
+                        # 美化数据展示
+                        st.markdown("#### 📊 查询结果")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            
+                            # 添加序号
+                            df.index = df.index + 1 + (st.session_state.all_qa_page - 1) * page_size
+                            df.index.name = "序号"
+                            
+                            # 使用expander展示每条记录
+                            for idx, row in df.iterrows():
+                                with st.expander(f"📄 记录 #{idx}: {row['问题内容'][:50]}{'...' if len(row['问题内容']) > 50 else ''}"):
+                                    col1, col2, col3 = st.columns([1, 1, 1])
+                                    
+                                    with col1:
+                                        st.markdown("**🤔 问题内容:**")
+                                        st.info(row['问题内容'] if row['问题内容'] else "暂无问题内容")
+                                    
+                                    with col2:
+                                        st.markdown("**💬 原答案内容:**")
+                                        if row['原答案内容'] and row['原答案内容'] != 'None':
+                                            st.success(row['原答案内容'])
+                                        else:
+                                            st.warning("暂无原答案")
+                                    
+                                    with col3:
+                                        st.markdown("**⭐ 标准答案内容:**")
+                                        if row['标准答案内容'] and row['标准答案内容'] != 'None':
+                                            st.success(row['标准答案内容'])
+                                        else:
+                                            st.warning("暂无标准答案")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.all_qa_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("all_qa", total_pages, st.session_state.all_qa_page)
                     else:
-                        show_error_message(f"❌ 查询失败: {message}")
+                        st.warning("🔍 未找到相关数据")
+                else:
+                    st.error(f"❌ 查询失败: {message}")
         
-        with col2:
-            if st.button("🏷️ 查看标签问题", key="tagged_questions"):
-                if "tagged_q_page" not in st.session_state:
-                    st.session_state.tagged_q_page = 1
+        st.markdown("---")
+        
+        # 第二个查询：查看标签问题
+        st.markdown("### 🏷️ 查看标签问题")
+        st.markdown("*查询带有标签分类的标准问题*")
+        
+        if st.button("🚀 开始查询", key="tagged_questions", use_container_width=True):
+            if "tagged_q_page" not in st.session_state:
+                st.session_state.tagged_q_page = 1
+            
+            with st.spinner("🔍 正在查询标签问题..."):
+                success, message, total_count, results, total_pages = get_questions_with_tags(
+                    st.session_state.tagged_q_page, page_size
+                )
                 
-                with st.spinner("查询中..."):
-                    success, message, total_count, results, total_pages = get_questions_with_tags(
-                        st.session_state.tagged_q_page, page_size
-                    )
+                if success:
+                    st.success(f"✅ {message} - 找到 {total_count} 条记录")
                     
-                    if success:
-                        st.success(f"✅ {message}")
+                    if results:
                         columns = ["标准问题ID", "问题内容", "标签名称", "原始问题"]
-                        display_query_results(results, columns, "tagged_q", total_count, total_pages, st.session_state.tagged_q_page)
+                        
+                        # 美化数据展示
+                        st.markdown("#### 📊 查询结果")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            df.index = df.index + 1 + (st.session_state.tagged_q_page - 1) * page_size
+                            df.index.name = "序号"
+                            
+                            # 按标签分组显示
+                            if not df.empty:
+                                tags = df['标签名称'].unique()
+                                for tag in tags:
+                                    tag_data = df[df['标签名称'] == tag]
+                                    
+                                    with st.expander(f"🏷️ 标签: {tag} ({len(tag_data)} 条记录)", expanded=True):
+                                        for idx, row in tag_data.iterrows():
+                                            st.markdown(f"**📄 问题 #{row['标准问题ID']}:**")
+                                            
+                                            col1, col2 = st.columns([2, 1])
+                                            with col1:
+                                                st.write(f"**标准问题:** {row['问题内容']}")
+                                                if row['原始问题'] and row['原始问题'] != row['问题内容']:
+                                                    st.write(f"**原始问题:** {row['原始问题']}")
+                                            with col2:
+                                                st.markdown(f"🏷️ **{tag}**")
+                                            
+                                            st.markdown("---")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.tagged_q_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("tagged_q", total_pages, st.session_state.tagged_q_page)
                     else:
-                        show_error_message(f"❌ 查询失败: {message}")
+                        st.warning("🔍 未找到相关数据")
+                else:
+                    st.error(f"❌ 查询失败: {message}")
         
-        with col3:
-            if st.button("📊 查看问答配对", key="qa_pairs"):
-                if "qa_pairs_page" not in st.session_state:
-                    st.session_state.qa_pairs_page = 1
+        st.markdown("---")
+        
+        # 第三个查询：查看问答配对
+        st.markdown("### 📊 查看问答配对")
+        st.markdown("*查询完整的标准问答配对信息，包含标签和更新历史*")
+        
+        if st.button("🚀 开始查询", key="qa_pairs", use_container_width=True):
+            if "qa_pairs_page" not in st.session_state:
+                st.session_state.qa_pairs_page = 1
+            
+            with st.spinner("🔍 正在查询问答配对..."):
+                success, message, total_count, results, total_pages = get_question_answer_pairs(
+                    st.session_state.qa_pairs_page, page_size
+                )
                 
-                with st.spinner("查询中..."):
-                    success, message, total_count, results, total_pages = get_question_answer_pairs(
-                        st.session_state.qa_pairs_page, page_size
-                    )
+                if success:
+                    st.success(f"✅ {message} - 找到 {total_count} 条记录")
                     
-                    if success:
-                        st.success(f"✅ {message}")
+                    if results:
                         columns = ["配对ID", "问题", "答案", "标签", "最后操作", "更新信息"]
-                        display_query_results(results, columns, "qa_pairs", total_count, total_pages, st.session_state.qa_pairs_page)
+                        
+                        # 美化数据展示
+                        st.markdown("#### 📊 查询结果")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            df.index = df.index + 1 + (st.session_state.qa_pairs_page - 1) * page_size
+                            df.index.name = "序号"
+                            
+                            # 卡片式展示每个问答配对
+                            for idx, row in df.iterrows():
+                                with st.container():
+                                    st.markdown(f"""
+                                    <div style="border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: #f9f9f9;">
+                                        <h4>📋 配对 #{row['配对ID']}</h4>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    col1, col2 = st.columns([1, 1])
+                                    
+                                    with col1:
+                                        st.markdown("**🤔 问题:**")
+                                        st.info(row['问题'] if row['问题'] else "暂无问题")
+                                        
+                                        st.markdown("**🏷️ 标签:**")
+                                        if row['标签']:
+                                            st.success(f"#{row['标签']}")
+                                        else:
+                                            st.warning("无标签")
+                                    
+                                    with col2:
+                                        st.markdown("**💡 答案:**")
+                                        st.success(row['答案'] if row['答案'] else "暂无答案")
+                                        
+                                        st.markdown("**🔄 更新信息:**")
+                                        if row['最后操作']:
+                                            st.info(f"操作: {row['最后操作']}")
+                                        if row['更新信息']:
+                                            st.caption(f"详情: {row['更新信息']}")
+                                    
+                                    st.markdown("---")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.qa_pairs_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("qa_pairs", total_pages, st.session_state.qa_pairs_page)
                     else:
-                        show_error_message(f"❌ 查询失败: {message}")
+                        st.warning("🔍 未找到相关数据")
+                else:
+                    st.error(f"❌ 查询失败: {message}")
+        
+        # 添加说明信息
+        with st.expander("💡 查询说明"):
+            st.markdown("""
+            **查询功能说明:**
+            
+            1. **📝 查看所有问题答案**: 展示原始问题与对应的原始答案和标准答案的关联关系
+            2. **🏷️ 查看标签问题**: 按标签分类展示标准化问题，便于分类浏览
+            3. **📊 查看问答配对**: 展示完整的问答配对信息，包含标签和更新历史
+            
+            **如果查询结果为空，可能的原因:**
+            - 数据库中没有相关数据
+            - 表之间的关联关系不完整
+            - 需要先导入测试数据
+            
+            **建议操作:**
+            1. 先使用"📊 数据库管理"功能检查表结构和数据
+            2. 使用"📥 数据导入"功能导入测试数据
+            3. 再进行查询操作
+            """)
     
     with tab2:
         st.subheader("🔗 关联查询功能")
         
         page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="relation_page_size")
         
-        col1, col2 = st.columns(2)
+        st.markdown("---")
         
-        with col1:
-            if st.button("🎯 LLM评估结果", key="llm_eval"):
-                if "llm_eval_page" not in st.session_state:
-                    st.session_state.llm_eval_page = 1
+        # 第一个查询：LLM评估结果
+        st.markdown("### 🎯 LLM评估结果")
+        st.markdown("*查看各种LLM模型对答案的评估分数和详细结果*")
+        
+        if st.button("🚀 开始查询", key="llm_eval", use_container_width=True):
+            if "llm_eval_page" not in st.session_state:
+                st.session_state.llm_eval_page = 1
+            
+            with st.spinner("🔍 正在查询LLM评估结果..."):
+                success, message, total_count, results, total_pages = get_llm_evaluation_results(
+                    st.session_state.llm_eval_page, page_size
+                )
                 
-                with st.spinner("查询中..."):
-                    success, message, total_count, results, total_pages = get_llm_evaluation_results(
-                        st.session_state.llm_eval_page, page_size
-                    )
+                if success:
+                    st.success(f"✅ {message} - 找到 {total_count} 条评估记录")
                     
-                    if success:
-                        st.success(f"✅ {message}")
+                    if results:
                         columns = ["评估ID", "LLM模型", "模型参数", "评分", "标准答案", "LLM答案", "问题内容"]
-                        display_query_results(results, columns, "llm_eval", total_count, total_pages, st.session_state.llm_eval_page)
+                        
+                        # 美化数据展示
+                        st.markdown("#### 📊 评估结果")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            df.index = df.index + 1 + (st.session_state.llm_eval_page - 1) * page_size
+                            df.index.name = "序号"
+                            
+                            # 按评分排序显示
+                            for idx, row in df.iterrows():
+                                # 根据评分设置颜色
+                                score = float(row['评分']) if row['评分'] else 0
+                                if score >= 80:
+                                    score_color = "🟢"  # 绿色
+                                elif score >= 60:
+                                    score_color = "🟡"  # 黄色
+                                else:
+                                    score_color = "🔴"  # 红色
+                                
+                                with st.expander(f"{score_color} 评估 #{row['评估ID']} - {row['LLM模型']} - 评分: {score:.1f}"):
+                                    col1, col2 = st.columns([1, 1])
+                                    
+                                    with col1:
+                                        st.markdown("**🤖 模型信息:**")
+                                        st.info(f"模型: {row['LLM模型']}")
+                                        st.info(f"参数量: {row['模型参数']}")
+                                        
+                                        st.markdown("**📊 评估分数:**")
+                                        st.metric("分数", f"{score:.1f}", delta=f"{score-75:.1f}" if score > 0 else None)
+                                        
+                                        if row['问题内容']:
+                                            st.markdown("**🤔 问题:**")
+                                            st.write(row['问题内容'])
+                                    
+                                    with col2:
+                                        st.markdown("**⭐ 标准答案:**")
+                                        if row['标准答案']:
+                                            st.success(row['标准答案'])
+                                        else:
+                                            st.warning("无标准答案")
+                                        
+                                        st.markdown("**🤖 LLM答案:**")
+                                        if row['LLM答案']:
+                                            st.info(row['LLM答案'])
+                                        else:
+                                            st.warning("无LLM答案")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.llm_eval_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("llm_eval", total_pages, st.session_state.llm_eval_page)
                     else:
-                        show_error_message(f"❌ 查询失败: {message}")
+                        st.warning("🔍 未找到评估数据")
+                else:
+                    st.error(f"❌ 查询失败: {message}")
         
-        with col2:
-            if st.button("🏆 高分答案排行", key="top_answers"):
-                if "top_ans_page" not in st.session_state:
-                    st.session_state.top_ans_page = 1
+        st.markdown("---")
+        
+        # 第二个查询：高分答案排行
+        st.markdown("### 🏆 高分答案排行")
+        st.markdown("*查看评分最高的答案排行榜*")
+        
+        if st.button("🚀 开始查询", key="top_answers", use_container_width=True):
+            if "top_ans_page" not in st.session_state:
+                st.session_state.top_ans_page = 1
+            
+            with st.spinner("🔍 正在查询高分答案..."):
+                success, message, total_count, results, total_pages = get_top_scored_answers(
+                    st.session_state.top_ans_page, page_size
+                )
                 
-                with st.spinner("查询中..."):
-                    success, message, total_count, results, total_pages = get_top_scored_answers(
-                        st.session_state.top_ans_page, page_size
-                    )
+                if success:
+                    st.success(f"✅ {message} - 找到 {total_count} 条高分答案")
                     
-                    if success:
-                        st.success(f"✅ {message}")
+                    if results:
                         columns = ["答案ID", "答案内容", "平均分", "评估次数", "问题内容"]
-                        display_query_results(results, columns, "top_ans", total_count, total_pages, st.session_state.top_ans_page)
+                        
+                        # 美化数据展示
+                        st.markdown("#### 🏆 排行榜")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            
+                            # 添加排名
+                            for rank, (idx, row) in enumerate(df.iterrows(), 1):
+                                # 排名徽章
+                                if rank == 1:
+                                    rank_badge = "🥇"
+                                elif rank == 2:
+                                    rank_badge = "🥈" 
+                                elif rank == 3:
+                                    rank_badge = "🥉"
+                                else:
+                                    rank_badge = f"#{rank}"
+                                
+                                avg_score = float(row['平均分']) if row['平均分'] else 0
+                                eval_count = int(row['评估次数']) if row['评估次数'] else 0
+                                
+                                with st.container():
+                                    st.markdown(f"""
+                                    <div style="border: 2px solid #gold; border-radius: 10px; padding: 15px; margin: 10px 0; background: linear-gradient(45deg, #fff3cd, #f8f9fa);">
+                                        <h4>{rank_badge} 第 {rank} 名 - 答案 #{row['答案ID']}</h4>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    col1, col2, col3 = st.columns([1, 1, 1])
+                                    
+                                    with col1:
+                                        st.metric("📊 平均评分", f"{avg_score:.1f}", delta=f"{avg_score-75:.1f}")
+                                        st.metric("🔢 评估次数", eval_count)
+                                    
+                                    with col2:
+                                        st.markdown("**💡 答案内容:**")
+                                        st.success(row['答案内容'] if row['答案内容'] else "无答案内容")
+                                    
+                                    with col3:
+                                        st.markdown("**🤔 对应问题:**")
+                                        if row['问题内容']:
+                                            st.info(row['问题内容'])
+                                        else:
+                                            st.warning("无关联问题")
+                                    
+                                    st.markdown("---")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.top_ans_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("top_ans", total_pages, st.session_state.top_ans_page)
                     else:
-                        show_error_message(f"❌ 查询失败: {message}")
+                        st.warning("🔍 未找到高分答案")
+                else:
+                    st.error(f"❌ 查询失败: {message}")
         
-        if st.button("🔄 最近更新", key="recent_updates"):
+        st.markdown("---")
+        
+        # 第三个查询：最近更新
+        st.markdown("### 🔄 最近更新")
+        st.markdown("*查看最近的数据更新记录和操作历史*")
+        
+        if st.button("🚀 开始查询", key="recent_updates", use_container_width=True):
             if "recent_up_page" not in st.session_state:
                 st.session_state.recent_up_page = 1
             
-            with st.spinner("查询中..."):
+            with st.spinner("🔍 正在查询更新记录..."):
                 success, message, total_count, results, total_pages = get_recent_updates(
                     st.session_state.recent_up_page, page_size
                 )
                 
                 if success:
-                    st.success(f"✅ {message}")
-                    columns = ["版本号", "操作类型", "更新描述", "影响问题数", "影响答案数"]
-                    display_query_results(results, columns, "recent_up", total_count, total_pages, st.session_state.recent_up_page)
+                    st.success(f"✅ {message} - 找到 {total_count} 条更新记录")
+                    
+                    if results:
+                        columns = ["版本号", "操作类型", "更新描述", "影响问题数", "影响答案数"]
+                        
+                        # 美化数据展示
+                        st.markdown("#### 🔄 更新历史")
+                        with st.container():
+                            df = pd.DataFrame(results, columns=columns)
+                            
+                            # 时间线式展示
+                            for idx, row in df.iterrows():
+                                operation_type = row['操作类型']
+                                
+                                # 根据操作类型设置图标和颜色
+                                if operation_type in ['CREATE', 'INSERT', '创建', '新增']:
+                                    op_icon = "🆕"
+                                    op_color = "#d4edda"
+                                elif operation_type in ['UPDATE', 'MODIFY', '更新', '修改']:
+                                    op_icon = "🔄"
+                                    op_color = "#d1ecf1"
+                                elif operation_type in ['DELETE', 'REMOVE', '删除']:
+                                    op_icon = "🗑️"
+                                    op_color = "#f8d7da"
+                                else:
+                                    op_icon = "📝"
+                                    op_color = "#f3f3f3"
+                                
+                                with st.container():
+                                    st.markdown(f"""
+                                    <div style="border-left: 4px solid #007bff; background-color: {op_color}; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                                        <h5>{op_icon} 版本 {row['版本号']} - {operation_type}</h5>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    col1, col2 = st.columns([2, 1])
+                                    
+                                    with col1:
+                                        st.markdown("**📝 更新描述:**")
+                                        st.write(row['更新描述'] if row['更新描述'] else "无描述")
+                                    
+                                    with col2:
+                                        st.markdown("**📊 影响范围:**")
+                                        if row['影响问题数']:
+                                            st.info(f"问题: {row['影响问题数']} 条")
+                                        if row['影响答案数']:
+                                            st.info(f"答案: {row['影响答案数']} 条")
+                                    
+                                    st.markdown("---")
+                            
+                            # 分页信息和控制
+                            st.info(f"📊 总记录数: {total_count} | 当前页: {st.session_state.recent_up_page}/{total_pages} | 当前显示: {len(results)} 条")
+                            show_pagination_controls("recent_up", total_pages, st.session_state.recent_up_page)
+                    else:
+                        st.warning("🔍 未找到更新记录")
                 else:
-                    show_error_message(f"❌ 查询失败: {message}")
+                    st.error(f"❌ 查询失败: {message}")
     
     with tab3:
         st.subheader("📊 统计分析功能")
