@@ -2,7 +2,13 @@ import streamlit as st
 import pandas as pd
 import mysql.connector
 import json #确保导入json模块
-from database import create_tables, get_connection, get_table_names, get_table_data, execute_query, batch_import_json_data # 导入 batch_import_json_data
+from database import (create_tables, get_connection, get_table_names, get_table_data, execute_query, batch_import_json_data, 
+                     get_all_questions_with_answers, get_questions_with_tags, get_llm_evaluation_results, 
+                     get_top_scored_answers, get_question_answer_pairs, get_model_performance_comparison,
+                     get_questions_by_tag, get_answers_by_score_range, get_recent_updates, search_content,
+                     get_database_statistics, get_tag_distribution, get_model_cost_analysis, 
+                     get_evaluation_trends, get_answer_length_analysis, get_question_complexity_analysis,
+                     get_orphan_records, get_evaluation_score_distribution) # 导入新的查询函数
 from utils import show_success_message, show_error_message, show_table_data, show_table_schema, download_sample_json, get_table_schema, show_warning_message
 
 # 页面配置
@@ -41,7 +47,7 @@ with st.sidebar:
     
     menu = st.radio(
         "功能菜单选项",
-        ["📊 数据库管理", "🕷️ 数据爬取", "🔍 LLM评估", "📥 数据导入"],
+        ["📊 数据库管理", "🔍 智能查询", "🕷️ 数据爬取", "🎯 LLM评估", "📥 数据导入"],
         label_visibility="collapsed"
     )
     
@@ -146,6 +152,448 @@ if menu == "📊 数据库管理":
                         else:
                             show_error_message("❌ 无法连接到数据库")
 
+# 智能查询页面
+elif menu == "🔍 智能查询":
+    st.header("🔍 智能查询")
+    
+    # 分页控制函数
+    def show_pagination_controls(key_prefix, total_pages, current_page):
+        """显示分页控制组件"""
+        col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
+        
+        with col1:
+            if st.button("⏮️ 首页", key=f"{key_prefix}_first") and current_page > 1:
+                st.session_state[f"{key_prefix}_page"] = 1
+                st.rerun()
+        
+        with col2:
+            if st.button("◀️ 上页", key=f"{key_prefix}_prev") and current_page > 1:
+                st.session_state[f"{key_prefix}_page"] = current_page - 1
+                st.rerun()
+        
+        with col3:
+            new_page = st.number_input(
+                f"页码 (共 {total_pages} 页)", 
+                min_value=1, 
+                max_value=total_pages, 
+                value=current_page,
+                key=f"{key_prefix}_page_input"
+            )
+            if new_page != current_page:
+                st.session_state[f"{key_prefix}_page"] = new_page
+                st.rerun()
+        
+        with col4:
+            if st.button("▶️ 下页", key=f"{key_prefix}_next") and current_page < total_pages:
+                st.session_state[f"{key_prefix}_page"] = current_page + 1
+                st.rerun()
+        
+        with col5:
+            if st.button("⏭️ 末页", key=f"{key_prefix}_last") and current_page < total_pages:
+                st.session_state[f"{key_prefix}_page"] = total_pages
+                st.rerun()
+    
+    def display_query_results(results, columns, key_prefix, total_count, total_pages, current_page):
+        """显示查询结果"""
+        if results:
+            df = pd.DataFrame(results, columns=columns)
+            st.dataframe(df, use_container_width=True)
+            
+            # 显示统计信息
+            st.info(f"📊 总记录数: {total_count} | 当前页: {current_page}/{total_pages} | 当前显示: {len(results)} 条")
+            
+            # 分页控制
+            show_pagination_controls(key_prefix, total_pages, current_page)
+        else:
+            st.warning("🔍 未找到相关数据")
+    
+    # 创建选项卡
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 基础查询", "🔗 关联查询", "📊 统计分析", "🔎 高级搜索"])
+    
+    with tab1:
+        st.subheader("📋 基础查询功能")
+        
+        # 设置每页显示条数
+        page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="basic_page_size")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📝 查看所有问题答案", key="all_qa"):
+                if "all_qa_page" not in st.session_state:
+                    st.session_state.all_qa_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_all_questions_with_answers(
+                        st.session_state.all_qa_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["问题内容", "原答案内容",  "标准答案内容"]
+                        display_query_results(results, columns, "all_qa", total_count, total_pages, st.session_state.all_qa_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+        
+        with col2:
+            if st.button("🏷️ 查看标签问题", key="tagged_questions"):
+                if "tagged_q_page" not in st.session_state:
+                    st.session_state.tagged_q_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_questions_with_tags(
+                        st.session_state.tagged_q_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["标准问题ID", "问题内容", "标签名称", "原始问题"]
+                        display_query_results(results, columns, "tagged_q", total_count, total_pages, st.session_state.tagged_q_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+        
+        with col3:
+            if st.button("📊 查看问答配对", key="qa_pairs"):
+                if "qa_pairs_page" not in st.session_state:
+                    st.session_state.qa_pairs_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_question_answer_pairs(
+                        st.session_state.qa_pairs_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["配对ID", "问题", "答案", "标签", "最后操作", "更新信息"]
+                        display_query_results(results, columns, "qa_pairs", total_count, total_pages, st.session_state.qa_pairs_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+    
+    with tab2:
+        st.subheader("🔗 关联查询功能")
+        
+        page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="relation_page_size")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🎯 LLM评估结果", key="llm_eval"):
+                if "llm_eval_page" not in st.session_state:
+                    st.session_state.llm_eval_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_llm_evaluation_results(
+                        st.session_state.llm_eval_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["评估ID", "LLM模型", "模型参数", "评分", "标准答案", "LLM答案", "问题内容"]
+                        display_query_results(results, columns, "llm_eval", total_count, total_pages, st.session_state.llm_eval_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+        
+        with col2:
+            if st.button("🏆 高分答案排行", key="top_answers"):
+                if "top_ans_page" not in st.session_state:
+                    st.session_state.top_ans_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_top_scored_answers(
+                        st.session_state.top_ans_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["答案ID", "答案内容", "平均分", "评估次数", "问题内容"]
+                        display_query_results(results, columns, "top_ans", total_count, total_pages, st.session_state.top_ans_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+        
+        if st.button("🔄 最近更新", key="recent_updates"):
+            if "recent_up_page" not in st.session_state:
+                st.session_state.recent_up_page = 1
+            
+            with st.spinner("查询中..."):
+                success, message, total_count, results, total_pages = get_recent_updates(
+                    st.session_state.recent_up_page, page_size
+                )
+                
+                if success:
+                    st.success(f"✅ {message}")
+                    columns = ["版本号", "操作类型", "更新描述", "影响问题数", "影响答案数"]
+                    display_query_results(results, columns, "recent_up", total_count, total_pages, st.session_state.recent_up_page)
+                else:
+                    show_error_message(f"❌ 查询失败: {message}")
+    
+    with tab3:
+        st.subheader("📊 统计分析功能")
+        
+        page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="stats_page_size")
+        
+        # 添加数据库总览
+        st.markdown("### 📈 数据库总览")
+        if st.button("📊 获取数据库统计", key="db_stats"):
+            with st.spinner("统计中..."):
+                stats = get_database_statistics()
+                
+                # 使用列显示统计信息
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("总问题数", stats.get("总问题数", 0))
+                    st.metric("标准问题数", stats.get("标准问题数", 0))
+                    st.metric("标签数量", stats.get("标签数量", 0))
+                
+                with col2:
+                    st.metric("总答案数", stats.get("总答案数", 0))
+                    st.metric("标准答案数", stats.get("标准答案数", 0))
+                    st.metric("LLM模型数", stats.get("LLM模型数", 0))
+                
+                with col3:
+                    st.metric("评估记录数", stats.get("评估记录数", 0))
+                    st.metric("问答配对数", stats.get("问答配对数", 0))
+                    st.metric("更新记录数", stats.get("更新记录数", 0))
+        
+        st.markdown("---")
+        
+        # 分析功能按钮组
+        st.markdown("### 🔍 详细分析")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📈 模型性能比较", key="model_performance"):
+                if "model_perf_page" not in st.session_state:
+                    st.session_state.model_perf_page = 1
+                
+                with st.spinner("查询中..."):
+                    success, message, total_count, results, total_pages = get_model_performance_comparison(
+                        st.session_state.model_perf_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["模型名称", "参数量", "总评估数", "平均分", "最高分", "最低分", "成本(每百万token)"]
+                        display_query_results(results, columns, "model_perf", total_count, total_pages, st.session_state.model_perf_page)
+                    else:
+                        show_error_message(f"❌ 查询失败: {message}")
+            
+            if st.button("🏷️ 标签分布统计", key="tag_dist"):
+                if "tag_dist_page" not in st.session_state:
+                    st.session_state.tag_dist_page = 1
+                
+                with st.spinner("统计中..."):
+                    success, message, total_count, results, total_pages = get_tag_distribution(
+                        st.session_state.tag_dist_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["标签名称", "问题数量", "答案数量"]
+                        display_query_results(results, columns, "tag_dist", total_count, total_pages, st.session_state.tag_dist_page)
+                    else:
+                        show_error_message(f"❌ 统计失败: {message}")
+        
+        with col2:
+            if st.button("💰 模型成本分析", key="cost_analysis"):
+                if "cost_page" not in st.session_state:
+                    st.session_state.cost_page = 1
+                
+                with st.spinner("分析中..."):
+                    success, message, total_count, results, total_pages = get_model_cost_analysis(
+                        st.session_state.cost_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["模型名称", "参数量", "单价(/百万token)", "总评估数", "平均分", "预估总成本"]
+                        display_query_results(results, columns, "cost", total_count, total_pages, st.session_state.cost_page)
+                    else:
+                        show_error_message(f"❌ 分析失败: {message}")
+            
+            if st.button("📏 答案长度分析", key="length_analysis"):
+                if "length_page" not in st.session_state:
+                    st.session_state.length_page = 1
+                
+                with st.spinner("分析中..."):
+                    success, message, total_count, results, total_pages = get_answer_length_analysis(
+                        st.session_state.length_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["答案ID", "答案长度", "平均分", "评估次数", "长度类别", "答案预览"]
+                        display_query_results(results, columns, "length", total_count, total_pages, st.session_state.length_page)
+                    else:
+                        show_error_message(f"❌ 分析失败: {message}")
+        
+        with col3:
+            if st.button("📊 评估趋势分析", key="eval_trends"):
+                if "trends_page" not in st.session_state:
+                    st.session_state.trends_page = 1
+                
+                with st.spinner("分析中..."):
+                    success, message, total_count, results, total_pages = get_evaluation_trends(
+                        st.session_state.trends_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["评估ID", "模型名称", "评分", "评分等级", "答案预览"]
+                        display_query_results(results, columns, "trends", total_count, total_pages, st.session_state.trends_page)
+                    else:
+                        show_error_message(f"❌ 分析失败: {message}")
+            
+            if st.button("🔧 问题复杂度分析", key="complexity_analysis"):
+                if "complex_page" not in st.session_state:
+                    st.session_state.complex_page = 1
+                
+                with st.spinner("分析中..."):
+                    success, message, total_count, results, total_pages = get_question_complexity_analysis(
+                        st.session_state.complex_page, page_size
+                    )
+                    
+                    if success:
+                        st.success(f"✅ {message}")
+                        columns = ["问题ID", "问题内容", "问题长度", "标签", "答案数", "平均分", "复杂度"]
+                        display_query_results(results, columns, "complex", total_count, total_pages, st.session_state.complex_page)
+                    else:
+                        show_error_message(f"❌ 分析失败: {message}")
+        
+        st.markdown("---")
+        
+        # 数据质量检查
+        st.markdown("### 🔍 数据质量检查")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🚨 查找孤立记录", key="orphan_records"):
+                if "orphan_page" not in st.session_state:
+                    st.session_state.orphan_page = 1
+                
+                with st.spinner("检查中..."):
+                    success, message, total_count, results, total_pages = get_orphan_records(
+                        st.session_state.orphan_page, page_size
+                    )
+                    
+                    if success:
+                        if total_count > 0:
+                            st.warning(f"⚠️ 发现 {total_count} 条孤立记录")
+                            columns = ["记录类型", "ID", "内容", "问题描述"]
+                            display_query_results(results, columns, "orphan", total_count, total_pages, st.session_state.orphan_page)
+                        else:
+                            st.success("✅ 未发现孤立记录，数据完整性良好")
+                    else:
+                        show_error_message(f"❌ 检查失败: {message}")
+        
+        with col2:
+            if st.button("📊 评分分布图", key="score_distribution"):
+                with st.spinner("生成分布图..."):
+                    success, message, results = get_evaluation_score_distribution()
+                    
+                    if success and results:
+                        st.success("✅ 评分分布统计")
+                        
+                        # 创建分布图
+                        df_dist = pd.DataFrame(results, columns=["分数区间", "数量", "百分比"])
+                        
+                        col_chart1, col_chart2 = st.columns(2)
+                        
+                        with col_chart1:
+                            st.bar_chart(df_dist.set_index("分数区间")["数量"])
+                            st.caption("📊 评分区间分布 - 数量")
+                        
+                        with col_chart2:
+                            st.bar_chart(df_dist.set_index("分数区间")["百分比"])
+                            st.caption("📊 评分区间分布 - 百分比")
+                        
+                        # 显示详细数据
+                        with st.expander("📋 详细分布数据"):
+                            st.dataframe(df_dist, use_container_width=True)
+                    else:
+                        show_error_message(f"❌ 生成失败: {message if not success else '暂无评估数据'}")
+
+    with tab4:
+        st.subheader("🔎 高级搜索功能")
+        
+        page_size = st.selectbox("每页显示条数", [5, 10, 20, 50], index=1, key="search_page_size")
+        
+        # 按标签搜索
+        st.markdown("### 🏷️ 按标签搜索")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            tag_search = st.text_input("输入标签名称", key="tag_search_input")
+        with col2:
+            search_by_tag = st.button("🔍 搜索", key="search_by_tag")
+        
+        if search_by_tag and tag_search:
+            if "tag_search_page" not in st.session_state:
+                st.session_state.tag_search_page = 1
+            
+            with st.spinner("搜索中..."):
+                success, message, total_count, results, total_pages = get_questions_by_tag(
+                    tag_search, st.session_state.tag_search_page, page_size
+                )
+                
+                if success:
+                    st.success(f"✅ {message}")
+                    columns = ["标准问题ID", "问题", "答案", "标签"]
+                    display_query_results(results, columns, "tag_search", total_count, total_pages, st.session_state.tag_search_page)
+                else:
+                    show_error_message(f"❌ 搜索失败: {message}")
+        
+        # 按评分范围搜索
+        st.markdown("### 📊 按评分范围搜索")
+        col1, col2, col3 = st.columns([2, 2, 1])
+        with col1:
+            min_score = st.number_input("最低分", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+        with col2:
+            max_score = st.number_input("最高分", min_value=0.0, max_value=100.0, value=100.0, step=0.1)
+        with col3:
+            search_by_score = st.button("🔍 搜索", key="search_by_score")
+        
+        if search_by_score:
+            if "score_search_page" not in st.session_state:
+                st.session_state.score_search_page = 1
+            
+            with st.spinner("搜索中..."):
+                success, message, total_count, results, total_pages = get_answers_by_score_range(
+                    min_score, max_score, st.session_state.score_search_page, page_size
+                )
+                
+                if success:
+                    st.success(f"✅ {message}")
+                    columns = ["答案ID", "答案内容", "评分", "问题", "模型名称"]
+                    display_query_results(results, columns, "score_search", total_count, total_pages, st.session_state.score_search_page)
+                else:
+                    show_error_message(f"❌ 搜索失败: {message}")
+        
+        # 内容搜索
+        st.markdown("### 📝 内容搜索")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            content_search = st.text_input("输入搜索关键词", key="content_search_input")
+        with col2:
+            search_content_btn = st.button("🔍 搜索", key="search_content")
+        
+        if search_content_btn and content_search:
+            if "content_search_page" not in st.session_state:
+                st.session_state.content_search_page = 1
+            
+            with st.spinner("搜索中..."):
+                success, message, total_count, results, total_pages = search_content(
+                    content_search, st.session_state.content_search_page, page_size
+                )
+                
+                if success:
+                    st.success(f"✅ {message}")
+                    columns = ["内容类型", "ID", "内容", "标签"]
+                    display_query_results(results, columns, "content_search", total_count, total_pages, st.session_state.content_search_page)
+                else:
+                    show_error_message(f"❌ 搜索失败: {message}")
+
 # 数据爬取页面
 elif menu == "🕷️ 数据爬取":
     st.header("🕷️ 数据爬取")
@@ -191,8 +639,8 @@ elif menu == "🕷️ 数据爬取":
         st.info("爬取历史功能将在下一版本中提供")
 
 # LLM评估页面
-elif menu == "🔍 LLM评估":
-    st.header("🔍 LLM评估")
+elif menu == "🎯 LLM评估":
+    st.header("🎯 LLM评估")
     
     # 创建选项卡
     tab1, tab2, tab3 = st.tabs(["评估配置", "评估结果", "模型比对"])

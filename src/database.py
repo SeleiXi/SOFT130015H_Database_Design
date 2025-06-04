@@ -322,3 +322,408 @@ def batch_import_json_data(json_data_dict):
             cursor.close()
         if conn and conn.is_connected():
             conn.close() 
+
+def get_paginated_query(query, params=None, page=1, page_size=10):
+    """执行分页查询"""
+    offset = (page - 1) * page_size
+    
+    # 获取总数的查询
+    count_query = f"SELECT COUNT(*) FROM ({query}) as count_table"
+    success_count, total_result = execute_query(count_query, params, True)
+    
+    if not success_count:
+        return False, "获取总数失败", 0, []
+    
+    total_count = total_result[0][0] if total_result else 0
+    total_pages = (total_count + page_size - 1) // page_size
+    
+    # 分页查询
+    paginated_query = f"{query} LIMIT %s OFFSET %s"
+    final_params = list(params) if params else []
+    final_params.extend([page_size, offset])
+    
+    success, result = execute_query(paginated_query, final_params, True)
+    
+    if success:
+        return True, "查询成功", total_count, result, total_pages
+    else:
+        return False, result, 0, [], 0
+
+def get_all_questions_with_answers(page=1, page_size=10):
+    """获取所有问题及其对应的答案"""
+    query = """
+    SELECT 
+        oq.content as question_content,
+        oa.content as answer_content,
+        sa.ans_content as std_answer_content
+    FROM ori_qs oq
+    RIGHT JOIN standard_QS sq ON oq.ori_qs_id = sq.ori_qs_id 
+    RIGHT JOIN standard_ans sa ON sq.std_ans_id = sa.ans_id
+    RIGHT JOIN original_ans oa ON sa.ori_ans_id = oa.ori_ans_id
+    ORDER BY oq.ori_qs_id
+    """
+    
+    #     SELECT 
+    #     sp.pair_id,
+    #     sq.content as question, 
+    #     sa.ans_content as answer,
+    #     t.name as tag,
+    #     uc.operation as last_operation,
+    #     uc.content as update_info
+    # FROM standard_pair sp # 用pair来join的
+    # INNER JOIN standard_QS sq ON sp.std_qs_id = sq.std_qs_id
+    # INNER JOIN standard_ans sa ON sp.std_ans_id = sa.ans_id
+    # INNER JOIN tags t ON sq.tag_id = t.tag_id
+    # INNER JOIN updated_content uc ON sp.updated_content_version = uc.updated_content_version
+    # ORDER BY sp.pair_id
+    
+    return get_paginated_query(query, None, page, page_size)
+
+def get_questions_with_tags(page=1, page_size=10):
+    """获取带标签的问题"""
+    query = """
+    SELECT 
+        sq.std_qs_id,
+        sq.content as question_content,
+        t.name as tag_name,
+        oq.content as original_question
+    FROM standard_QS sq
+    INNER JOIN tags t ON sq.tag_id = t.tag_id
+    INNER JOIN ori_qs oq ON sq.ori_qs_id = oq.ori_qs_id
+    ORDER BY t.name, sq.std_qs_id
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_llm_evaluation_results(page=1, page_size=10):
+    """获取LLM评估结果"""
+    query = """
+    SELECT 
+        le.eval_id,
+        lt.name as llm_model,
+        lt.params as model_params,
+        le.llm_score,
+        sa.ans_content as standard_answer,
+        le.llm_answer,
+        sq.content as question_content
+    FROM llm_evaluation le
+    INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
+    INNER JOIN standard_ans sa ON le.std_ans_id = sa.ans_id
+    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    ORDER BY le.llm_score DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_top_scored_answers(page=1, page_size=10):
+    """获取高分答案排行"""
+    query = """
+    SELECT 
+        sa.ans_id,
+        sa.ans_content,
+        AVG(le.llm_score) as avg_score,
+        COUNT(le.eval_id) as evaluation_count,
+        sq.content as question_content
+    FROM standard_ans sa
+    INNER JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
+    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    GROUP BY sa.ans_id, sa.ans_content, sq.content
+    HAVING evaluation_count > 0
+    ORDER BY avg_score DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_question_answer_pairs(page=1, page_size=10):
+    """获取完整的问答配对"""
+    query = """
+    SELECT 
+        sp.pair_id,
+        sq.content as question,
+        sa.ans_content as answer,
+        t.name as tag,
+        uc.operation as last_operation,
+        uc.content as update_info
+    FROM standard_pair sp
+    INNER JOIN standard_QS sq ON sp.std_qs_id = sq.std_qs_id
+    INNER JOIN standard_ans sa ON sp.std_ans_id = sa.ans_id
+    INNER JOIN tags t ON sq.tag_id = t.tag_id
+    INNER JOIN updated_content uc ON sp.updated_content_version = uc.updated_content_version
+    ORDER BY sp.pair_id
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_model_performance_comparison(page=1, page_size=10):
+    """获取模型性能比较"""
+    query = """
+    SELECT 
+        lt.name as model_name,
+        lt.params as model_params,
+        COUNT(le.eval_id) as total_evaluations,
+        AVG(le.llm_score) as avg_score,
+        MAX(le.llm_score) as max_score,
+        MIN(le.llm_score) as min_score,
+        lt.costs_per_million_token as cost_per_million
+    FROM llm_type lt
+    LEFT JOIN llm_evaluation le ON lt.llm_type_id = le.llm_type_id
+    GROUP BY lt.llm_type_id, lt.name, lt.params, lt.costs_per_million_token
+    ORDER BY avg_score DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_questions_by_tag(tag_name, page=1, page_size=10):
+    """根据标签获取问题"""
+    query = """
+    SELECT 
+        sq.std_qs_id,
+        sq.content as question,
+        sa.ans_content as answer,
+        t.name as tag
+    FROM standard_QS sq
+    INNER JOIN tags t ON sq.tag_id = t.tag_id
+    LEFT JOIN standard_ans sa ON sq.std_ans_id = sa.ans_id
+    WHERE t.name = %s
+    ORDER BY sq.std_qs_id
+    """
+    return get_paginated_query(query, (tag_name,), page, page_size)
+
+def get_answers_by_score_range(min_score, max_score, page=1, page_size=10):
+    """根据评分范围获取答案"""
+    query = """
+    SELECT DISTINCT
+        sa.ans_id,
+        sa.ans_content,
+        le.llm_score,
+        sq.content as question,
+        lt.name as model_name
+    FROM standard_ans sa
+    INNER JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
+    INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
+    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    WHERE le.llm_score BETWEEN %s AND %s
+    ORDER BY le.llm_score DESC
+    """
+    return get_paginated_query(query, (min_score, max_score), page, page_size)
+
+def get_recent_updates(page=1, page_size=10):
+    """获取最近更新的内容"""
+    query = """
+    SELECT 
+        uc.updated_content_version,
+        uc.operation,
+        uc.content as update_description,
+        COUNT(DISTINCT sq.std_qs_id) as affected_questions,
+        COUNT(DISTINCT sa.ans_id) as affected_answers
+    FROM updated_content uc
+    LEFT JOIN standard_QS sq ON uc.updated_content_version = sq.updated_content_version
+    LEFT JOIN standard_ans sa ON uc.updated_content_version = sa.updated_content_version
+    GROUP BY uc.updated_content_version, uc.operation, uc.content
+    ORDER BY uc.updated_content_version DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def search_content(search_term, page=1, page_size=10):
+    """搜索问题和答案内容"""
+    query = """
+    SELECT 
+        'Question' as content_type,
+        sq.std_qs_id as id,
+        sq.content as content,
+        t.name as tag
+    FROM standard_QS sq
+    INNER JOIN tags t ON sq.tag_id = t.tag_id
+    WHERE sq.content LIKE %s
+    
+    UNION ALL
+    
+    SELECT 
+        'Answer' as content_type,
+        sa.ans_id as id,
+        sa.ans_content as content,
+        NULL as tag
+    FROM standard_ans sa
+    WHERE sa.ans_content LIKE %s
+    
+    ORDER BY content_type, id
+    """
+    search_pattern = f"%{search_term}%"
+    return get_paginated_query(query, (search_pattern, search_pattern), page, page_size)
+
+def get_database_statistics():
+    """获取数据库统计信息"""
+    stats_queries = {
+        "总问题数": "SELECT COUNT(*) FROM ori_qs",
+        "总答案数": "SELECT COUNT(*) FROM original_ans", 
+        "标准问题数": "SELECT COUNT(*) FROM standard_QS",
+        "标准答案数": "SELECT COUNT(*) FROM standard_ans",
+        "评估记录数": "SELECT COUNT(*) FROM llm_evaluation",
+        "问答配对数": "SELECT COUNT(*) FROM standard_pair",
+        "标签数量": "SELECT COUNT(*) FROM tags",
+        "LLM模型数": "SELECT COUNT(*) FROM llm_type",
+        "更新记录数": "SELECT COUNT(*) FROM updated_content"
+    }
+    
+    results = {}
+    for stat_name, query in stats_queries.items():
+        success, result = execute_query(query, None, True)
+        if success and result:
+            results[stat_name] = result[0][0]
+        else:
+            results[stat_name] = 0
+    
+    return results
+
+def get_tag_distribution(page=1, page_size=10):
+    """获取标签分布统计"""
+    query = """
+    SELECT 
+        t.name as tag_name,
+        COUNT(sq.std_qs_id) as question_count,
+        COUNT(DISTINCT sa.ans_id) as answer_count
+    FROM tags t
+    LEFT JOIN standard_QS sq ON t.tag_id = sq.tag_id
+    LEFT JOIN standard_ans sa ON sq.std_ans_id = sa.ans_id
+    GROUP BY t.tag_id, t.name
+    ORDER BY question_count DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_model_cost_analysis(page=1, page_size=10):
+    """获取模型成本分析"""
+    query = """
+    SELECT 
+        lt.name as model_name,
+        lt.params as parameters,
+        lt.costs_per_million_token as cost_per_million,
+        COUNT(le.eval_id) as total_evaluations,
+        AVG(le.llm_score) as avg_score,
+        (COUNT(le.eval_id) * lt.costs_per_million_token / 1000000) as estimated_cost
+    FROM llm_type lt
+    LEFT JOIN llm_evaluation le ON lt.llm_type_id = le.llm_type_id
+    GROUP BY lt.llm_type_id, lt.name, lt.params, lt.costs_per_million_token
+    ORDER BY estimated_cost DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_evaluation_trends(page=1, page_size=10):
+    """获取评估趋势分析"""
+    query = """
+    SELECT 
+        le.eval_id,
+        lt.name as model_name,
+        le.llm_score,
+        CASE 
+            WHEN le.llm_score >= 80 THEN '优秀'
+            WHEN le.llm_score >= 60 THEN '良好'
+            WHEN le.llm_score >= 40 THEN '一般'
+            ELSE '较差'
+        END as score_category,
+        sa.ans_content as answer_preview
+    FROM llm_evaluation le
+    JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
+    JOIN standard_ans sa ON le.std_ans_id = sa.ans_id
+    ORDER BY le.llm_score DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_answer_length_analysis(page=1, page_size=10):
+    """获取答案长度分析"""
+    query = """
+    SELECT 
+        sa.ans_id,
+        CHAR_LENGTH(sa.ans_content) as answer_length,
+        AVG(le.llm_score) as avg_score,
+        COUNT(le.eval_id) as evaluation_count,
+        CASE 
+            WHEN CHAR_LENGTH(sa.ans_content) < 100 THEN '短'
+            WHEN CHAR_LENGTH(sa.ans_content) < 500 THEN '中'
+            ELSE '长'
+        END as length_category,
+        LEFT(sa.ans_content, 100) as answer_preview
+    FROM standard_ans sa
+    LEFT JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
+    GROUP BY sa.ans_id, sa.ans_content
+    ORDER BY answer_length DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_question_complexity_analysis(page=1, page_size=10):
+    """获取问题复杂度分析"""
+    query = """
+    SELECT 
+        sq.std_qs_id,
+        sq.content as question,
+        CHAR_LENGTH(sq.content) as question_length,
+        t.name as tag,
+        COUNT(DISTINCT sa.ans_id) as answer_count,
+        AVG(le.llm_score) as avg_score,
+        CASE 
+            WHEN CHAR_LENGTH(sq.content) < 50 THEN '简单'
+            WHEN CHAR_LENGTH(sq.content) < 150 THEN '中等'
+            ELSE '复杂'
+        END as complexity_level
+    FROM standard_QS sq
+    LEFT JOIN tags t ON sq.tag_id = t.tag_id
+    LEFT JOIN standard_ans sa ON sq.std_ans_id = sa.ans_id
+    LEFT JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
+    GROUP BY sq.std_qs_id, sq.content, t.name
+    ORDER BY question_length DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_orphan_records(page=1, page_size=10):
+    """获取孤立记录（没有关联的记录）"""
+    query = """
+    SELECT 
+        'Questions without Answers' as record_type,
+        oq.ori_qs_id as id,
+        oq.content as content,
+        'No associated answers' as issue
+    FROM ori_qs oq
+    LEFT JOIN standard_QS sq ON oq.ori_qs_id = sq.ori_qs_id
+    WHERE sq.std_qs_id IS NULL
+    
+    UNION ALL
+    
+    SELECT 
+        'Answers without Questions' as record_type,
+        oa.ori_ans_id as id,
+        LEFT(oa.content, 100) as content,
+        'No associated questions' as issue
+    FROM original_ans oa
+    LEFT JOIN standard_ans sa ON oa.ori_ans_id = sa.ori_ans_id
+    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    WHERE sq.std_qs_id IS NULL
+    
+    ORDER BY record_type, id
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_evaluation_score_distribution():
+    """获取评估分数分布"""
+    query = """
+    SELECT 
+        CASE 
+            WHEN llm_score >= 90 THEN '90-100'
+            WHEN llm_score >= 80 THEN '80-89'
+            WHEN llm_score >= 70 THEN '70-79'
+            WHEN llm_score >= 60 THEN '60-69'
+            WHEN llm_score >= 50 THEN '50-59'
+            ELSE '< 50'
+        END as score_range,
+        COUNT(*) as count,
+        ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM llm_evaluation), 2) as percentage
+    FROM llm_evaluation
+    GROUP BY 
+        CASE 
+            WHEN llm_score >= 90 THEN '90-100'
+            WHEN llm_score >= 80 THEN '80-89'
+            WHEN llm_score >= 70 THEN '70-79'
+            WHEN llm_score >= 60 THEN '60-69'
+            WHEN llm_score >= 50 THEN '50-59'
+            ELSE '< 50'
+        END
+    ORDER BY score_range DESC
+    """
+    success, result = execute_query(query, None, True)
+    if success:
+        return True, "查询成功", result
+    else:
+        return False, result, [] 
