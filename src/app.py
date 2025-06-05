@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import mysql.connector
 import json #确保导入json模块
+import os
 from database import (create_tables, get_connection, get_table_names, get_table_data, execute_query, batch_import_json_data, 
                      get_all_questions_with_answers, get_questions_with_tags, get_llm_evaluation_results, 
                      get_top_scored_answers, get_question_answer_pairs, get_model_performance_comparison,
@@ -10,6 +11,18 @@ from database import (create_tables, get_connection, get_table_names, get_table_
                      get_evaluation_trends, get_answer_length_analysis, get_question_complexity_analysis,
                      get_orphan_records, get_evaluation_score_distribution) # 导入新的查询函数
 from utils import show_success_message, show_error_message, show_table_data, show_table_schema, download_sample_json, get_table_schema, show_warning_message
+
+# 导入LLM评估模块
+try:
+    from llm_evaluator import (
+        evaluator, 
+        evaluate_standard_pairs, 
+        get_model_statistics
+    )
+    LLM_EVALUATOR_AVAILABLE = True
+except ImportError as e:
+    print(f"LLM评估模块导入失败: {e}")
+    LLM_EVALUATOR_AVAILABLE = False
 
 # 页面配置
 st.set_page_config(
@@ -1003,66 +1016,337 @@ elif menu == "数据爬取":
 elif menu == "LLM评估":
     st.header("LLM评估")
     
-    # 创建选项卡
-    tab1, tab2, tab3 = st.tabs(["评估配置", "评估结果", "模型比对"])
-    
-    with tab1:
-        st.subheader("配置评估参数")
+    if not LLM_EVALUATOR_AVAILABLE:
+        st.error("❌ LLM评估模块不可用，请检查依赖安装和API密钥配置")
+        st.info("请确保已安装：pip install langchain langchain-openai langchain-anthropic")
+        st.info("并在根目录创建.env文件配置API密钥（参考env_example.txt）")
+    else:
+        # 创建选项卡
+        tab1, tab2, tab3 = st.tabs(["评估配置", "评估结果", "模型比对"])
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 模型选择")
-            model = st.selectbox(
-                "选择LLM模型",
-                ["GPT-4", "Claude 3 Opus", "Llama 3 70B", "Gemini 1.5 Pro"]
+        with tab1:
+            st.subheader("配置评估参数")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### 模型选择")
+                
+                # 获取可用模型
+                available_models = evaluator.get_available_models()
+                model = st.selectbox(
+                    "选择LLM模型",
+                    available_models,
+                    help="选择用于评估的LLM模型"
+                )
+                
+                # API密钥状态检查
+                if model.startswith("gpt"):
+                    api_status = "✅ OpenAI" if os.getenv("OPENAI_API_KEY") else "❌ 需要OPENAI_API_KEY"
+                elif model.startswith("claude"):
+                    api_status = "✅ Anthropic" if os.getenv("ANTHROPIC_API_KEY") else "❌ 需要ANTHROPIC_API_KEY"
+                else:
+                    api_status = "未知"
+                
+                st.info(f"API状态: {api_status}")
+            
+            with col2:
+                st.markdown("#### 评估方法")
+                eval_method = st.selectbox(
+                    "评估方法",
+                    ["综合评分", "内容相关性", "答案准确性", "解释清晰度"],
+                    help="选择评估的方法和标准"
+                )
+                
+                eval_metrics = st.multiselect(
+                    "关注指标",
+                    ["正确性", "完整性", "清晰度", "专业性", "相关性"],
+                    default=["正确性", "完整性", "清晰度"],
+                    help="选择重点关注的评估指标"
+                )
+            
+            st.markdown("### 评估范围")
+            
+            eval_option = st.radio(
+                "评估范围选项",
+                ["评估所有标准问答对", "评估特定标签的问答对", "评估特定问题ID"],
+                help="选择要评估的问答对范围"
             )
             
-            api_key = st.text_input("API密钥（如需要）", type="password")
-        
-        with col2:
-            st.markdown("#### 评估方法")
-            eval_method = st.selectbox(
-                "评估方法",
-                ["内容相关性", "答案准确性", "解释清晰度", "综合评分"]
-            )
+            # 根据选择显示不同的配置选项
+            tag_to_eval = None
+            question_id = None
+            eval_limit = None
             
-            eval_metrics = st.multiselect(
-                "评估指标",
-                ["正确性", "完整性", "清晰度", "专业性", "创新性"],
-                default=["正确性", "完整性", "清晰度"]
-            )
+            if eval_option == "评估特定标签的问答对":
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    tag_to_eval = st.text_input("输入标签名称", placeholder="例如: database, sql")
+                with col2:
+                    eval_limit = st.number_input("限制数量", min_value=1, value=10, help="限制评估的问答对数量")
+            
+            elif eval_option == "评估特定问题ID":
+                question_id = st.number_input("输入问题Pair ID", min_value=1, value=1)
+            
+            else:  # 评估所有
+                eval_limit = st.number_input("限制数量（可选）", min_value=1, value=50, help="限制评估数量以避免过多API调用")
+            
+            # 高级设置
+            with st.expander("高级设置"):
+                criteria = st.text_area(
+                    "自定义评估标准", 
+                    value="标准问答评估",
+                    help="输入自定义的评估标准和要求"
+                )
+                
+                show_progress = st.checkbox("显示详细进度", value=True)
+                
+            # 预估成本显示
+            if eval_option == "评估所有标准问答对":
+                # 获取总数
+                pairs = evaluator.get_standard_pairs(limit=1)  # 获取一条来测试连接
+                if pairs:
+                    st.info("⚠️ 注意：评估所有问答对可能消耗大量API额度，建议先进行小范围测试")
+            
+            # 开始评估按钮
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                start_eval = st.button(
+                    "🚀 开始评估", 
+                    key="start_eval",
+                    use_container_width=True,
+                    help="点击开始LLM评估过程"
+                )
+            
+            if start_eval:
+                # 参数验证
+                can_proceed = True
+                
+                if model.startswith("gpt") and not os.getenv("OPENAI_API_KEY"):
+                    st.error("❌ 请配置OPENAI_API_KEY环境变量")
+                    can_proceed = False
+                elif model.startswith("claude") and not os.getenv("ANTHROPIC_API_KEY"):
+                    st.error("❌ 请配置ANTHROPIC_API_KEY环境变量")
+                    can_proceed = False
+                
+                # 确定评估参数
+                if can_proceed:
+                    if eval_option == "评估特定标签的问答对":
+                        if not tag_to_eval:
+                            st.error("❌ 请输入标签名称")
+                            can_proceed = False
+                        else:
+                            eval_params = {
+                                'tag_filter': tag_to_eval,
+                                'limit': eval_limit
+                            }
+                    elif eval_option == "评估特定问题ID":
+                        eval_params = {
+                            'pair_id': question_id
+                        }
+                    else:
+                        eval_params = {
+                            'limit': eval_limit
+                        }
+                
+                # 开始评估
+                if can_proceed:
+                    with st.spinner(f"正在使用 {model} 进行评估..."):
+                        progress_container = st.container()
+                        
+                        try:
+                            # 执行评估
+                            result = evaluate_standard_pairs(
+                                model_name=model,
+                                **eval_params
+                            )
+                            
+                            if result['success']:
+                                st.success(f"✅ {result['message']}")
+                                
+                                # 显示评估统计
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("总问答对", result['total_pairs'])
+                                with col2:
+                                    st.metric("成功评估", result['success_count'])
+                                with col3:
+                                    st.metric("失败数量", result['fail_count'])
+                                
+                                # 显示详细结果
+                                if result['results']:
+                                    st.markdown("#### 评估结果详情")
+                                    
+                                    results_df = pd.DataFrame(result['results'])
+                                    
+                                    # 按成功/失败分组显示
+                                    success_results = results_df[results_df['success'] == True]
+                                    fail_results = results_df[results_df['success'] == False]
+                                    
+                                    if len(success_results) > 0:
+                                        st.markdown("**成功评估的问答对:**")
+                                        st.dataframe(
+                                            success_results[['pair_id', 'question', 'score']],
+                                            use_container_width=True
+                                        )
+                                    
+                                    if len(fail_results) > 0:
+                                        with st.expander(f"失败的评估 ({len(fail_results)}条)"):
+                                            st.dataframe(
+                                                fail_results[['pair_id', 'question', 'error']],
+                                                use_container_width=True
+                                            )
+                            else:
+                                st.error(f"❌ 评估失败: {result['message']}")
+                                
+                        except Exception as e:
+                            st.error(f"❌ 评估过程出错: {str(e)}")
+                            if 'logger' in globals():
+                                logger.error(f"LLM评估错误: {e}", exc_info=True)
         
-        st.markdown("### 评估范围")
+        with tab2:
+            st.subheader("评估结果查看")
+            
+            # 刷新数据按钮
+            if st.button("🔄 刷新数据", key="refresh_eval_results"):
+                st.rerun()
+            
+            # 获取评估统计
+            try:
+                stats_result = get_model_statistics()
+                
+                if stats_result['success'] and stats_result['statistics']:
+                    st.markdown("#### 模型评估统计")
+                    
+                    stats_df = pd.DataFrame(stats_result['statistics'])
+                    
+                    # 显示统计表格
+                    st.dataframe(
+                        stats_df.round(2),
+                        use_container_width=True,
+                        column_config={
+                            "model_name": "模型名称",
+                            "total_evaluations": "评估次数",
+                            "avg_score": "平均分数",
+                            "min_score": "最低分数",
+                            "max_score": "最高分数",
+                            "score_stddev": "分数标准差"
+                        }
+                    )
+                    
+                    # 可视化
+                    if len(stats_df) > 0:
+                        st.markdown("#### 模型性能对比图")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            # 平均分数对比
+                            import plotly.express as px
+                            fig_avg = px.bar(
+                                stats_df, 
+                                x='model_name', 
+                                y='avg_score',
+                                title="各模型平均评分对比",
+                                labels={'model_name': '模型', 'avg_score': '平均分数'}
+                            )
+                            st.plotly_chart(fig_avg, use_container_width=True)
+                        
+                        with col2:
+                            # 评估次数对比
+                            fig_count = px.pie(
+                                stats_df,
+                                values='total_evaluations',
+                                names='model_name',
+                                title="评估次数分布"
+                            )
+                            st.plotly_chart(fig_count, use_container_width=True)
+                else:
+                    st.info("📊 暂无评估数据，请先进行评估")
+                    
+            except Exception as e:
+                st.error(f"❌ 获取评估统计失败: {str(e)}")
         
-        eval_option = st.radio(
-            "评估范围选项",
-            ["评估所有标准问答对", "评估特定标签的问答对", "评估特定问题ID"],
-            label_visibility="collapsed"
-        )
-        
-        if eval_option == "评估特定标签的问答对":
-            tag_to_eval = st.text_input("输入标签名称")
-        elif eval_option == "评估特定问题ID":
-            question_id = st.number_input("输入问题ID", min_value=1, value=1)
-        
-        # 高级设置
-        with st.expander("高级设置"):
-            st.slider("温度", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
-            st.number_input("最大输出长度", min_value=100, value=500)
-            st.checkbox("使用流式输出", value=True)
-        
-        if st.button("开始评估", key="start_eval"):
-            with st.spinner("评估中..."):
-                st.info("评估功能尚未实现，此处为界面展示")
-    
-    with tab2:
-        st.subheader("评估结果")
-        st.info("请先进行评估...")
-    
-    with tab3:
-        st.subheader("模型比对")
-        st.info("模型比对功能将在下一版本中提供")
+        with tab3:
+            st.subheader("模型性能对比")
+            
+            col1, col2 = st.columns([1, 3])
+            
+            with col1:
+                st.markdown("#### 对比选项")
+                
+                # 模型选择
+                models_to_compare = st.multiselect(
+                    "选择要对比的模型",
+                    available_models,
+                    default=available_models[:2] if len(available_models) >= 2 else available_models
+                )
+                
+                # 对比维度
+                comparison_metrics = st.multiselect(
+                    "对比维度", 
+                    ["平均分数", "最高分数", "最低分数", "评估次数", "分数稳定性"],
+                    default=["平均分数", "评估次数"]
+                )
+                
+                if st.button("生成对比报告"):
+                    if len(models_to_compare) < 2:
+                        st.warning("⚠️ 请至少选择两个模型进行对比")
+                    else:
+                        st.session_state.show_comparison = True
+            
+            with col2:
+                if st.session_state.get('show_comparison', False):
+                    st.markdown("#### 对比结果")
+                    
+                    try:
+                        # 获取选中模型的统计数据
+                        comparison_data = []
+                        for model_name in models_to_compare:
+                            model_stats = get_model_statistics(model_name)
+                            if model_stats['success'] and model_stats['statistics']:
+                                comparison_data.extend(model_stats['statistics'])
+                        
+                        if comparison_data:
+                            comp_df = pd.DataFrame(comparison_data)
+                            comp_df = comp_df[comp_df['model_name'].isin(models_to_compare)]
+                            
+                            # 生成对比图表
+                            if "平均分数" in comparison_metrics and len(comp_df) > 0:
+                                fig_comparison = px.radar(
+                                    comp_df,
+                                    r='avg_score',
+                                    theta='model_name',
+                                    title="模型平均分数雷达图",
+                                    range_r=[0, 100]
+                                )
+                                st.plotly_chart(fig_comparison, use_container_width=True)
+                            
+                            # 显示详细对比表
+                            st.markdown("**详细对比数据:**")
+                            display_columns = ['model_name', 'total_evaluations', 'avg_score']
+                            if 'min_score' in comp_df.columns:
+                                display_columns.extend(['min_score', 'max_score', 'score_stddev'])
+                            
+                            st.dataframe(
+                                comp_df[display_columns].round(2),
+                                use_container_width=True
+                            )
+                            
+                            # 生成结论
+                            if len(comp_df) > 0:
+                                best_model = comp_df.loc[comp_df['avg_score'].idxmax(), 'model_name']
+                                most_stable = comp_df.loc[comp_df['score_stddev'].idxmin(), 'model_name'] if 'score_stddev' in comp_df.columns else "未知"
+                                
+                                st.markdown("#### 🎯 对比结论")
+                                st.success(f"**最高平均分:** {best_model}")
+                                if most_stable != "未知":
+                                    st.info(f"**最稳定模型:** {most_stable}")
+                        else:
+                            st.warning("⚠️ 没有找到所选模型的评估数据")
+                            
+                    except Exception as e:
+                        st.error(f"❌ 生成对比报告失败: {str(e)}")
 
 # 数据导入页面
 elif menu == "数据导入":

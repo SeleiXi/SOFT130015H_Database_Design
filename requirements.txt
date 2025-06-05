@@ -1,4 +1,12 @@
 streamlit==1.31.0
 mysql-connector-python==8.0.32
 pandas==2.2.0
-numpy==1.26.4 
+numpy==1.26.4
+langchain
+langchain-community
+langchain-openai
+langchain-anthropic
+openai
+anthropic
+python-dotenv
+plotly
