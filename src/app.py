@@ -479,7 +479,7 @@ if query_selected:
                     st.success(f"{message} - 找到 {total_count} 条评估记录")
                     
                     if results:
-                        columns = ["评估ID", "LLM模型", "模型参数", "评分", "标准答案", "LLM答案", "问题内容"]
+                        columns = ["评估ID", "LLM模型", "模型参数", "评分", "标准答案", "LLM答案", "问题内容", "问题ID"]
                         
                         # 美化数据展示
                         st.markdown("#### 评估结果")
@@ -499,7 +499,7 @@ if query_selected:
                                 else:
                                     score_color = "[低分]"  # 红色
                                 
-                                with st.expander(f"{score_color} 评估 #{row['评估ID']} - {row['LLM模型']} - 评分: {score:.1f}"):
+                                with st.expander(f"{score_color} [问题#{row['问题ID']}] 评估 #{row['评估ID']} - {row['LLM模型']} - 评分: {score:.1f}"):
                                     col1, col2 = st.columns([1, 1])
                                     
                                     with col1:

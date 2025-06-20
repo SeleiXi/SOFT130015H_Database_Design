@@ -485,7 +485,7 @@ def get_questions_with_tags(page=1, page_size=10):
 
 def get_llm_evaluation_results(page=1, page_size=10):
     """获取LLM评估结果 - 只返回有关联问题的评估记录"""
-    # 只查询有真实问题关联的评估记录
+    # 只查询有真实问题关联的评估记录，按问题ID排序
     query = """
     SELECT 
         le.eval_id,
@@ -494,13 +494,14 @@ def get_llm_evaluation_results(page=1, page_size=10):
         le.llm_score,
         oa.content as standard_answer,
         le.llm_answer,
-        oq.content as question_content
+        oq.content as question_content,
+        oq.ori_qs_id as question_id
     FROM llm_evaluation le
     INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
     INNER JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
     INNER JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
     WHERE oq.content IS NOT NULL
-    ORDER BY le.llm_score DESC
+    ORDER BY oq.ori_qs_id ASC, le.llm_score DESC
     """
     return get_paginated_query(query, None, page, page_size)
 
