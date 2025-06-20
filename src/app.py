@@ -152,7 +152,7 @@ with st.sidebar:
     )
     
     # 添加权限检查说明
-    if user_info['role'] != 'admin' and menu in ["数据库管理", "数据导入"]:
+    if user_info['role'] != 'admin' and menu in ["数据库管理"]:
         st.warning("⚠️ 部分功能需要管理员权限")
     
     # 显示系统状态和查询菜单
@@ -2310,12 +2310,12 @@ elif menu == "数据导入":
     st.header("数据导入")
     
     # 权限检查 - MAY NEED REVIEW
-    if user_info['role'] != 'admin':
-        st.warning("⚠️ 数据导入功能需要管理员权限")
-        st.info("您可以查看导入说明，但无法执行实际导入操作")
-        import_allowed = False
-    else:
-        import_allowed = True
+    # if user_info['role'] != 'admin':
+    #     st.warning("⚠️ 数据导入功能需要管理员权限")
+    #     st.info("您可以查看导入说明，但无法执行实际导入操作")
+    #     import_allowed = False
+    # else:
+    #     import_allowed = True
     
     # 创建选项卡
     tab1, tab2, tab3 = st.tabs(["文件导入", "API导入", "导入历史"])
