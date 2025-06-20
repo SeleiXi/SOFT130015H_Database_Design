@@ -134,13 +134,20 @@ class LLMEvaluator:
         """获取可用的模型列表"""
         return list(self.models.keys())
     
-    def init_model(self, model_name: str):
+    def init_model(self, model_name: str, temperature: float = 0.3):
         """初始化指定的模型"""
         if model_name not in self.models:
             raise ValueError(f"不支持的模型: {model_name}")
         
         try:
-            return self.models[model_name]()
+            # 创建模型实例
+            model_instance = self.models[model_name]()
+            
+            # 如果需要自定义温度，重新设置
+            if temperature != 0.3:
+                model_instance.temperature = temperature
+                
+            return model_instance
         except Exception as e:
             logger.error(f"初始化模型 {model_name} 失败: {e}")
             raise
@@ -228,12 +235,12 @@ class LLMEvaluator:
         return pairs
     
     def evaluate_pair(self, model_name: str, question: str, answer: str, 
-                     criteria: str = "标准问答评估") -> Dict:
+                     criteria: str = "标准问答评估", temperature: float = 0.3) -> Dict:
         """评估单个问答对"""
         
         try:
             # 初始化模型
-            llm = self.init_model(model_name)
+            llm = self.init_model(model_name, temperature)
             
             # 创建评估链
             chain = LLMChain(llm=llm, prompt=self.evaluation_prompt)
@@ -511,10 +518,11 @@ class LLMEvaluator:
                       tag_filter: Optional[str] = None,
                       pair_id: Optional[int] = None,
                       limit: Optional[int] = None,
-                      criteria: str = "标准问答评估") -> Dict:
+                      criteria: str = "标准问答评估",
+                      temperature: float = 0.3) -> Dict:
         """批量评估标准问答对"""
         
-        logger.info(f"开始批量评估 - 模型: {model_name}")
+        logger.info(f"开始批量评估 - 模型: {model_name}, 温度: {temperature}")
         
         # 获取问答对
         pairs = self.get_standard_pairs(tag_filter, pair_id, limit)
@@ -539,7 +547,8 @@ class LLMEvaluator:
                     model_name, 
                     pair['question'], 
                     pair['answer'], 
-                    criteria
+                    criteria,
+                    temperature
                 )
                 
                 if eval_result['success']:
@@ -642,9 +651,11 @@ evaluator = LLMEvaluator()
 def evaluate_standard_pairs(model_name: str, 
                            tag_filter: Optional[str] = None,
                            pair_id: Optional[int] = None,
-                           limit: Optional[int] = None) -> Dict:
+                           limit: Optional[int] = None,
+                           criteria: str = "标准问答评估",
+                           temperature: float = 0.3) -> Dict:
     """评估标准问答对的便捷函数"""
-    return evaluator.batch_evaluate(model_name, tag_filter, pair_id, limit)
+    return evaluator.batch_evaluate(model_name, tag_filter, pair_id, limit, criteria, temperature)
 
 
 def get_model_statistics(model_name: Optional[str] = None) -> Dict:

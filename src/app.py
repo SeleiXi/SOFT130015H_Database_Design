@@ -1190,7 +1190,7 @@ elif menu == "LLM评估":
         st.info("并在根目录创建.env文件配置API密钥（参考env_example.txt）")
     else:
         # 创建选项卡
-        tab1, tab2, tab3 = st.tabs(["评估配置", "评估结果", "模型比对"])
+        tab1, tab2, tab3, tab4 = st.tabs(["评估配置", "评估结果", "模型比对", "Prompt分析"])
         
         with tab1:
             st.subheader("配置评估参数")
@@ -1260,21 +1260,328 @@ elif menu == "LLM评估":
                 eval_limit = st.number_input("限制数量（可选）", min_value=1, value=50, help="限制评估数量以避免过多API调用")
             
             # 高级设置
-            with st.expander("高级设置"):
-                criteria = st.text_area(
-                    "自定义评估标准", 
-                    value="标准问答评估",
-                    help="输入自定义的评估标准和要求"
+            with st.expander("🔧 高级设置与自定义Prompt"):
+                st.markdown("#### 📝 Prompt模板配置")
+                
+                # Prompt模板选择
+                prompt_template_option = st.radio(
+                    "选择Prompt模式",
+                    ["预定义模板", "自定义Prompt", "混合模式"],
+                    help="选择评估Prompt的配置方式"
                 )
                 
-                show_progress = st.checkbox("显示详细进度", value=True)
+                if prompt_template_option == "预定义模板":
+                    predefined_templates = {
+                        "标准问答评估": "标准问答评估",
+                        "严格学术评估": "请以严格的学术标准评估此问答对，重点关注答案的科学性、逻辑性和引用规范性",
+                        "实用性评估": "请从实用性和可操作性角度评估此问答对，重点关注答案的实际应用价值",
+                        "创新性评估": "请从创新性和独特性角度评估此问答对，重点关注答案的新颖性和创造性思维",
+                        "教学质量评估": "请从教学角度评估此问答对，重点关注答案的教育价值和学习指导作用",
+                        "技术文档评估": "请从技术文档角度评估此问答对，重点关注答案的技术准确性和实现细节"
+                    }
+                    
+                    selected_template = st.selectbox(
+                        "选择预定义模板",
+                        list(predefined_templates.keys()),
+                        help="选择适合的评估标准模板"
+                    )
+                    criteria = predefined_templates[selected_template]
+                    
+                    # 显示选中模板的内容
+                    st.info(f"📄 当前模板内容: {criteria}")
                 
+                elif prompt_template_option == "自定义Prompt":
+                    st.markdown("**💡 自定义评估标准和Prompt**")
+                    
+                    # Prompt模板管理
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    with col1:
+                        criteria = st.text_area(
+                            "输入自定义评估标准", 
+                            value="标准问答评估",
+                            height=120,
+                            help="详细描述您的评估标准、关注点和特殊要求"
+                        )
+                    
+                    with col2:
+                        st.markdown("**模板管理**")
+                        
+                        # 保存当前Prompt
+                        template_name = st.text_input("模板名称", placeholder="输入模板名称")
+                        if st.button("💾 保存模板", disabled=not template_name):
+                            if 'saved_prompts' not in st.session_state:
+                                st.session_state.saved_prompts = {}
+                            st.session_state.saved_prompts[template_name] = criteria
+                            st.success(f"✅ 模板 '{template_name}' 已保存")
+                    
+                    with col3:
+                        st.markdown("**加载模板**")
+                        
+                        # 显示已保存的模板
+                        if 'saved_prompts' in st.session_state and st.session_state.saved_prompts:
+                            selected_saved = st.selectbox(
+                                "选择已保存模板",
+                                list(st.session_state.saved_prompts.keys()),
+                                key="select_saved_prompt"
+                            )
+                            
+                            if st.button("📂 加载模板"):
+                                criteria = st.session_state.saved_prompts[selected_saved]
+                                st.success(f"✅ 已加载模板 '{selected_saved}'")
+                                st.rerun()
+                        else:
+                            st.info("暂无保存的模板")
+                    
+                    # 显示已保存的模板列表
+                    if 'saved_prompts' in st.session_state and st.session_state.saved_prompts:
+                        with st.expander("📋 已保存的模板"):
+                            for name, content in st.session_state.saved_prompts.items():
+                                col_name, col_preview, col_action = st.columns([1, 3, 1])
+                                with col_name:
+                                    st.write(f"**{name}**")
+                                with col_preview:
+                                    preview_text = content[:80] + "..." if len(content) > 80 else content
+                                    st.write(preview_text)
+                                with col_action:
+                                    if st.button(f"🗑️", key=f"delete_{name}", help=f"删除模板 {name}"):
+                                        del st.session_state.saved_prompts[name]
+                                        st.rerun()
+                    
+                    # 提供Prompt编写建议
+                    with st.expander("📚 Prompt编写建议"):
+                        st.markdown("""
+                        **好的评估Prompt应该包含：**
+                        
+                        1. **明确的评估目标** - 说明评估的目的和用途
+                        2. **具体的评分标准** - 详细说明各个维度的评分依据
+                        3. **关注重点** - 突出需要特别关注的方面
+                        4. **行业背景** - 如果有特定行业背景，请说明
+                        5. **评估范围** - 明确评估的范围和边界
+                        
+                        **示例：**
+                        ```
+                        请从数据库专业角度评估此SQL相关问答对，
+                        重点关注SQL语法的正确性、性能优化建议的合理性、
+                        以及解决方案的实际可行性。评估时请考虑企业级
+                        数据库应用场景。
+                        ```
+                        """)
+                
+                else:  # 混合模式
+                    st.markdown("**🔄 混合模式配置**")
+                    
+                    col1, col2 = st.columns([1, 1])
+                    with col1:
+                        base_template = st.selectbox(
+                            "基础模板",
+                            ["标准问答评估", "严格学术评估", "实用性评估", "创新性评估"],
+                            help="选择基础的评估模板"
+                        )
+                    
+                    with col2:
+                        additional_focus = st.multiselect(
+                            "额外关注点",
+                            ["代码质量", "安全性", "性能优化", "用户体验", "可维护性", "扩展性"],
+                            help="选择需要额外关注的评估维度"
+                        )
+                    
+                    custom_addition = st.text_area(
+                        "补充说明",
+                        placeholder="在基础模板基础上，添加特殊的评估要求...",
+                        height=80
+                    )
+                    
+                    # 构建混合criteria
+                    criteria = base_template
+                    if additional_focus:
+                        criteria += f"，特别关注：{', '.join(additional_focus)}"
+                    if custom_addition:
+                        criteria += f"。补充要求：{custom_addition}"
+                    
+                    st.info(f"📋 最终评估标准: {criteria}")
+                
+                st.markdown("---")
+                st.markdown("#### ⚙️ 其他高级选项")
+                
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    show_progress = st.checkbox("显示详细进度", value=True)
+                    save_prompt_history = st.checkbox("保存Prompt历史", value=False, help="保存使用过的自定义Prompt")
+                
+                with col2:
+                    temperature_override = st.checkbox("自定义模型温度", value=False)
+                    if temperature_override:
+                        custom_temperature = st.slider("温度值", 0.0, 1.0, 0.3, 0.1, help="较低温度更稳定，较高温度更有创造性")
+                    else:
+                        custom_temperature = 0.3
+                
+                # Prompt预览功能
+                if st.button("🔍 预览完整Prompt", key="preview_prompt"):
+                    st.session_state.show_prompt_preview = True
+                
+                if st.session_state.get('show_prompt_preview', False):
+                    with st.expander("📄 完整Prompt预览", expanded=True):
+                        sample_question = "什么是数据库索引？"
+                        sample_answer = "数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。"
+                        
+                        preview_prompt = f"""
+你是一个专业的问答质量评估专家。请评估以下问答对的质量。
+
+【问题】
+{sample_question}
+
+【答案】
+{sample_answer}
+
+【评估标准】
+{criteria}
+
+请从以下5个维度进行评分，每个维度给出0-100分的整数分数：
+
+1. 准确性 (accuracy)：答案是否正确回答了问题
+2. 完整性 (completeness)：答案是否完整，涵盖了问题的各个方面  
+3. 清晰度 (clarity)：答案表达是否清晰易懂
+4. 专业性 (professionalism)：答案是否体现了专业水准
+5. 相关性 (relevance)：答案与问题的相关程度
+
+请严格按照以下JSON格式返回结果，不要添加任何其他文字：
+
+{{
+    "accuracy": 85,
+    "completeness": 90,
+    "clarity": 88,
+    "professionalism": 87,
+    "relevance": 92,
+    "total_score": 88.4,
+    "reasoning": "详细的评价理由说明..."
+}}
+
+注意：total_score是五个维度分数的平均值。请确保JSON格式正确，字段名使用英文。
+                        """
+                        st.code(preview_prompt, language="markdown")
+                        
+                        col_close, col_test = st.columns([1, 1])
+                        with col_close:
+                            if st.button("关闭预览"):
+                                st.session_state.show_prompt_preview = False
+                                st.rerun()
+                        with col_test:
+                            if st.button("🧪 测试此Prompt") and LLM_EVALUATOR_AVAILABLE:
+                                st.session_state.test_prompt = True
+                
+                # Prompt测试功能
+                if st.session_state.get('test_prompt', False):
+                    with st.expander("🧪 Prompt测试结果", expanded=True):
+                        test_question = st.text_input("测试问题", value="什么是数据库索引？")
+                        test_answer = st.text_area("测试答案", value="数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。")
+                        
+                        col_test_model, col_test_btn = st.columns([1, 1])
+                        with col_test_model:
+                            test_model = st.selectbox("测试模型", available_models, key="test_model_select")
+                        with col_test_btn:
+                            if st.button("执行测试"):
+                                if test_model.startswith("gpt") and not os.getenv("OPENAI_API_KEY"):
+                                    st.error("❌ 请配置OPENAI_API_KEY环境变量")
+                                elif test_model.startswith("claude") and not os.getenv("ANTHROPIC_API_KEY"):
+                                    st.error("❌ 请配置ANTHROPIC_API_KEY环境变量")
+                                else:
+                                    with st.spinner("测试中..."):
+                                        try:
+                                            # 直接调用评估器测试
+                                            test_result = evaluator.evaluate_pair(
+                                                test_model, 
+                                                test_question, 
+                                                test_answer, 
+                                                criteria,
+                                                custom_temperature
+                                            )
+                                            
+                                            if test_result['success']:
+                                                st.success("✅ 测试成功")
+                                                
+                                                # 显示评估结果
+                                                col_scores, col_raw = st.columns([1, 1])
+                                                
+                                                with col_scores:
+                                                    st.markdown("**评估分数:**")
+                                                    eval_data = test_result['evaluation']
+                                                    st.metric("总分", f"{eval_data['total_score']:.1f}")
+                                                    
+                                                    score_col1, score_col2 = st.columns(2)
+                                                    with score_col1:
+                                                        st.metric("准确性", f"{eval_data['accuracy']:.0f}")
+                                                        st.metric("完整性", f"{eval_data['completeness']:.0f}")
+                                                        st.metric("清晰度", f"{eval_data['clarity']:.0f}")
+                                                    with score_col2:
+                                                        st.metric("专业性", f"{eval_data['professionalism']:.0f}")
+                                                        st.metric("相关性", f"{eval_data['relevance']:.0f}")
+                                                    
+                                                    st.markdown("**评价理由:**")
+                                                    st.write(eval_data.get('reasoning', '无'))
+                                                
+                                                with col_raw:
+                                                    st.markdown("**原始响应:**")
+                                                    st.code(test_result['raw_response'], language="text")
+                                            else:
+                                                st.error(f"❌ 测试失败: {test_result.get('error', '未知错误')}")
+                                                if 'raw_response' in test_result:
+                                                    st.text_area("原始响应", test_result['raw_response'], height=100)
+                                        
+                                        except Exception as e:
+                                            st.error(f"❌ 测试出错: {str(e)}")
+                        
+                        if st.button("关闭测试"):
+                            st.session_state.test_prompt = False
+                            st.rerun()
+                
+            # 评估配置摘要
+            st.markdown("---")
+            st.markdown("#### 📊 评估配置摘要")
+            
+            summary_col1, summary_col2, summary_col3 = st.columns([1, 1, 1])
+            
+            with summary_col1:
+                st.info(f"""
+                **模型配置**
+                - 模型: {model}
+                - 温度: {custom_temperature}
+                - 评估方法: {eval_method}
+                """)
+            
+            with summary_col2:
+                focus_text = ", ".join(eval_metrics) if eval_metrics else "默认"
+                st.info(f"""
+                **评估范围**
+                - 范围: {eval_option}
+                - 关注指标: {focus_text}
+                """)
+            
+            with summary_col3:
+                criteria_preview = criteria[:60] + "..." if len(criteria) > 60 else criteria
+                st.info(f"""
+                **Prompt设置**
+                - 模式: {prompt_template_option}
+                - 评估标准: {criteria_preview}
+                """)
+            
             # 预估成本显示
             if eval_option == "评估所有标准问答对":
                 # 获取总数
                 pairs = evaluator.get_standard_pairs(limit=1)  # 获取一条来测试连接
                 if pairs:
-                    st.info("⚠️ 注意：评估所有问答对可能消耗大量API额度，建议先进行小范围测试")
+                    st.warning("⚠️ 注意：评估所有问答对可能消耗大量API额度，建议先进行小范围测试")
+            
+            # 显示当前评估成本估算
+            if eval_option != "评估所有标准问答对":
+                expected_count = eval_limit if 'eval_limit' in locals() else 1
+                model_costs = {
+                    "gpt-4": 30.0,
+                    "gpt-3.5-turbo": 0.5,
+                    "claude-3-opus": 15.0,
+                    "claude-3-sonnet": 3.0
+                }
+                estimated_cost = model_costs.get(model, 1.0) * expected_count * 0.001  # 假设每次评估约1000 tokens
+                st.info(f"💰 预估成本: 约 ${estimated_cost:.3f} ({expected_count} 次评估)")
             
             # 开始评估按钮
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -1326,6 +1633,8 @@ elif menu == "LLM评估":
                             # 执行评估
                             result = evaluate_standard_pairs(
                                 model_name=model,
+                                criteria=criteria,
+                                temperature=custom_temperature,
                                 **eval_params
                             )
                             
@@ -1364,6 +1673,65 @@ elif menu == "LLM评估":
                                                 fail_results[['pair_id', 'question', 'error']],
                                                 use_container_width=True
                                             )
+                                    
+                                    # 评估结果反馈
+                                    st.markdown("---")
+                                    st.markdown("#### 📝 评估结果反馈")
+                                    
+                                    col_feedback1, col_feedback2 = st.columns([1, 1])
+                                    
+                                    with col_feedback1:
+                                        evaluation_satisfaction = st.slider(
+                                            "对本次评估结果满意度", 
+                                            1, 5, 3, 
+                                            help="1=很不满意, 5=很满意"
+                                        )
+                                        
+                                        prompt_effectiveness = st.selectbox(
+                                            "您认为使用的Prompt效果如何？",
+                                            ["很好，评估准确", "较好，基本准确", "一般，有待改进", "较差，偏差较大", "很差，完全不准确"]
+                                        )
+                                    
+                                    with col_feedback2:
+                                        feedback_text = st.text_area(
+                                            "其他建议和意见",
+                                            placeholder="请分享您对评估结果的看法，或对Prompt改进的建议...",
+                                            height=100
+                                        )
+                                        
+                                        if st.button("💌 提交反馈"):
+                                            # 保存反馈到session state（实际项目中可以保存到数据库）
+                                            if 'evaluation_feedback' not in st.session_state:
+                                                st.session_state.evaluation_feedback = []
+                                            
+                                            feedback_record = {
+                                                'timestamp': pd.Timestamp.now(),
+                                                'model': model,
+                                                'criteria': criteria,
+                                                'satisfaction': evaluation_satisfaction,
+                                                'effectiveness': prompt_effectiveness,
+                                                'feedback': feedback_text,
+                                                'total_pairs': result['total_pairs'],
+                                                'success_rate': result['success_count'] / result['total_pairs'] * 100
+                                            }
+                                            
+                                            st.session_state.evaluation_feedback.append(feedback_record)
+                                            st.success("✅ 感谢您的反馈！这将帮助我们改进评估系统")
+                                    
+                                    # 显示Prompt优化建议
+                                    if evaluation_satisfaction < 3 or "较差" in prompt_effectiveness or "很差" in prompt_effectiveness:
+                                        with st.expander("💡 Prompt优化建议", expanded=True):
+                                            st.markdown("""
+                                            **基于您的反馈，以下是一些优化建议：**
+                                            
+                                            1. **细化评估标准** - 尝试更具体地描述每个维度的评分依据
+                                            2. **添加领域知识** - 在Prompt中加入相关领域的专业要求
+                                            3. **提供评分示例** - 给出不同分数段的答案示例
+                                            4. **调整模型温度** - 降低温度可能得到更稳定的结果
+                                            5. **分步骤评估** - 将评估过程分解为多个子步骤
+                                            
+                                            您可以在高级设置中尝试这些优化方案。
+                                            """)
                             else:
                                 st.error(f"❌ 评估失败: {result['message']}")
                                 
@@ -1515,6 +1883,174 @@ elif menu == "LLM评估":
                             
                     except Exception as e:
                         st.error(f"❌ 生成对比报告失败: {str(e)}")
+        
+        with tab4:
+            st.subheader("📊 Prompt效果分析")
+            
+            # 检查是否有反馈数据
+            if 'evaluation_feedback' in st.session_state and st.session_state.evaluation_feedback:
+                feedback_data = st.session_state.evaluation_feedback
+                
+                # 数据概览
+                st.markdown("#### 📈 反馈数据概览")
+                
+                col_overview1, col_overview2, col_overview3 = st.columns([1, 1, 1])
+                
+                with col_overview1:
+                    total_feedback = len(feedback_data)
+                    avg_satisfaction = sum(f['satisfaction'] for f in feedback_data) / total_feedback
+                    st.metric("总反馈数", total_feedback)
+                    st.metric("平均满意度", f"{avg_satisfaction:.1f}/5")
+                
+                with col_overview2:
+                    avg_success_rate = sum(f['success_rate'] for f in feedback_data) / total_feedback
+                    st.metric("平均成功率", f"{avg_success_rate:.1f}%")
+                    
+                    # 最常用的模型
+                    model_counts = {}
+                    for f in feedback_data:
+                        model = f['model']
+                        model_counts[model] = model_counts.get(model, 0) + 1
+                    most_used_model = max(model_counts, key=model_counts.get) if model_counts else "无"
+                    st.metric("最常用模型", most_used_model)
+                
+                with col_overview3:
+                    # 效果分布
+                    effectiveness_counts = {}
+                    for f in feedback_data:
+                        eff = f['effectiveness']
+                        effectiveness_counts[eff] = effectiveness_counts.get(eff, 0) + 1
+                    
+                    st.markdown("**效果评价分布:**")
+                    for eff, count in effectiveness_counts.items():
+                        percentage = count / total_feedback * 100
+                        st.write(f"• {eff}: {count}次 ({percentage:.1f}%)")
+                
+                # 详细分析图表
+                st.markdown("---")
+                st.markdown("#### 📊 详细分析")
+                
+                # 转换为DataFrame进行分析
+                import plotly.express as px
+                import plotly.graph_objects as go
+                
+                df_feedback = pd.DataFrame(feedback_data)
+                
+                col_chart1, col_chart2 = st.columns([1, 1])
+                
+                with col_chart1:
+                    # 满意度时间趋势
+                    if len(df_feedback) > 1:
+                        df_feedback['timestamp'] = pd.to_datetime(df_feedback['timestamp'])
+                        df_feedback = df_feedback.sort_values('timestamp')
+                        
+                        fig_trend = px.line(
+                            df_feedback, 
+                            x='timestamp', 
+                            y='satisfaction',
+                            title="满意度时间趋势",
+                            labels={'satisfaction': '满意度', 'timestamp': '时间'}
+                        )
+                        fig_trend.update_yaxis(range=[1, 5])
+                        st.plotly_chart(fig_trend, use_container_width=True)
+                    else:
+                        st.info("需要更多数据来显示趋势图")
+                
+                with col_chart2:
+                    # 模型满意度对比
+                    if len(df_feedback['model'].unique()) > 1:
+                        model_satisfaction = df_feedback.groupby('model')['satisfaction'].mean().reset_index()
+                        
+                        fig_model = px.bar(
+                            model_satisfaction,
+                            x='model',
+                            y='satisfaction',
+                            title="各模型平均满意度",
+                            labels={'satisfaction': '平均满意度', 'model': '模型'}
+                        )
+                        fig_model.update_yaxis(range=[1, 5])
+                        st.plotly_chart(fig_model, use_container_width=True)
+                    else:
+                        st.info("需要更多模型数据来显示对比")
+                
+                # 反馈详情表格
+                st.markdown("---")
+                st.markdown("#### 📋 反馈详情")
+                
+                # 显示反馈表格
+                display_df = df_feedback[['timestamp', 'model', 'satisfaction', 'effectiveness', 'success_rate', 'feedback']].copy()
+                display_df['timestamp'] = display_df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
+                display_df['criteria_preview'] = [criteria[:50] + "..." if len(criteria) > 50 else criteria for criteria in df_feedback['criteria']]
+                
+                st.dataframe(
+                    display_df,
+                    use_container_width=True,
+                    column_config={
+                        "timestamp": "时间",
+                        "model": "模型",
+                        "satisfaction": "满意度",
+                        "effectiveness": "效果评价",
+                        "success_rate": "成功率(%)",
+                        "feedback": "反馈意见",
+                        "criteria_preview": "评估标准(预览)"
+                    }
+                )
+                
+                # Prompt优化建议
+                st.markdown("---")
+                st.markdown("#### 💡 基于数据的Prompt优化建议")
+                
+                # 根据反馈数据生成建议
+                low_satisfaction_count = len([f for f in feedback_data if f['satisfaction'] < 3])
+                poor_effectiveness_count = len([f for f in feedback_data if "较差" in f['effectiveness'] or "很差" in f['effectiveness']])
+                
+                if low_satisfaction_count > total_feedback * 0.3:
+                    st.warning(f"⚠️ {low_satisfaction_count}/{total_feedback} 次评估满意度较低，建议优化Prompt设计")
+                
+                if poor_effectiveness_count > 0:
+                    st.warning(f"⚠️ {poor_effectiveness_count}/{total_feedback} 次评估效果不佳，建议检查评估标准设置")
+                
+                # 成功率分析
+                avg_success_rate = sum(f['success_rate'] for f in feedback_data) / total_feedback
+                if avg_success_rate < 80:
+                    st.warning(f"⚠️ 平均成功率 {avg_success_rate:.1f}% 较低，建议检查API配置和模型稳定性")
+                
+                # 导出反馈数据
+                if st.button("📥 导出反馈数据"):
+                    csv_data = df_feedback.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="下载CSV文件",
+                        data=csv_data,
+                        file_name=f"prompt_feedback_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv"
+                    )
+                
+                # 清除反馈数据选项
+                if st.button("🗑️ 清除所有反馈数据", type="secondary"):
+                    if st.session_state.get('confirm_clear_feedback', False):
+                        st.session_state.evaluation_feedback = []
+                        st.session_state.confirm_clear_feedback = False
+                        st.success("✅ 反馈数据已清除")
+                        st.rerun()
+                    else:
+                        st.session_state.confirm_clear_feedback = True
+                        st.warning("⚠️ 请再次点击确认清除所有反馈数据")
+            
+            else:
+                st.info("📝 暂无反馈数据")
+                st.markdown("""
+                **开始收集反馈数据：**
+                
+                1. 在"评估配置"选项卡中配置并执行评估
+                2. 评估完成后提交反馈
+                3. 返回此处查看Prompt效果分析
+                
+                **分析功能包括：**
+                - 满意度趋势分析
+                - 模型效果对比
+                - Prompt优化建议
+                - 详细反馈记录
+                """)
 
 # 答案标注页面
 elif menu == "答案标注":
