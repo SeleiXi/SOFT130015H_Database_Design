@@ -1,0 +1,33 @@
+# 数据库配置
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=db_design_pj
+DB_PORT=3306
+DB_CHARSET=utf8mb4
+DB_AUTOCOMMIT=True
+
+# 数据库连接池配置
+DB_POOL_NAME=llm_eval_pool
+DB_POOL_SIZE=5
+DB_POOL_RESET_SESSION=True
+
+# 应用配置
+APP_DEBUG=False
+APP_LOG_LEVEL=INFO
+STREAMLIT_PORT=8501
+STREAMLIT_HOST=localhost
+
+# LLM API密钥配置
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# 认证系统配置
+# 默认管理员账户会在首次运行时自动创建
+# 用户名: admin
+# 密码: admin123
+# 请在生产环境中修改默认密码
+
+# 会话安全配置
+SESSION_TIMEOUT=3600  # 会话超时时间（秒）
+PASSWORD_MIN_LENGTH=6  # 最小密码长度 

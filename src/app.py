@@ -12,6 +12,14 @@ from database import (create_tables, get_connection, get_table_names, get_table_
                      get_orphan_records, get_evaluation_score_distribution) # 导入新的查询函数
 from utils import show_success_message, show_error_message, show_table_data, show_table_schema, download_sample_json, get_table_schema, show_warning_message
 
+# 导入认证相关模块
+from auth import require_login, require_admin
+from components.auth_ui import (
+    show_login_form, show_register_form, show_user_info, 
+    show_change_password_form, show_admin_panel, show_auth_sidebar,
+    initialize_auth_system
+)
+
 # 导入LLM评估模块
 try:
     from llm_evaluator import (
@@ -32,11 +40,73 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 初始化认证系统
+if not initialize_auth_system():
+    st.error("❌ 认证系统初始化失败，请检查数据库连接")
+    st.stop()
+
+# 检查登录状态
+if not require_login():
+    # 显示登录页面
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.title("🔐 LLM问答评估系统")
+        st.markdown("---")
+        st.markdown("**请登录以继续使用系统**")
+        
+        # 显示注册表单或登录表单
+        if st.session_state.get('show_register', False):
+            show_register_form()
+        else:
+            user_info = show_login_form()
+            if user_info:
+                st.session_state.user_info = user_info
+                st.rerun()
+    
+    st.stop()
+
+# 用户已登录，显示主界面
+user_info = st.session_state.user_info
+
 # 应用标题
-st.title("LLM问答评估系统")
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.title("LLM问答评估系统")
+    st.markdown("本系统用于LLM问答数据的管理、爬取和评估，支持多种模型评估比对")
+
+with col2:
+    # 显示用户信息
+    if st.button("👤 个人中心", use_container_width=True):
+        st.session_state.show_user_center = True
+
 st.markdown("---")
 
-st.markdown("本系统用于LLM问答数据的管理、爬取和评估，支持多种模型评估比对")
+# 检查是否显示个人中心
+if st.session_state.get('show_user_center', False):
+    show_user_info(user_info)
+    
+    if st.session_state.get('show_change_password', False):
+        show_change_password_form(user_info['user_id'])
+    
+    if st.button("返回主页"):
+        for key in ['show_user_center', 'show_change_password']:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
+    
+    st.stop()
+
+# 检查是否显示管理员面板
+if st.session_state.get('show_admin_panel', False):
+    show_admin_panel()
+    
+    if st.button("返回主页"):
+        if 'show_admin_panel' in st.session_state:
+            del st.session_state.show_admin_panel
+        st.rerun()
+    
+    st.stop()
 
 tables_num = 0
 
@@ -58,11 +128,21 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+    # 根据用户角色显示不同的功能选项
+    if user_info['role'] == 'admin':
+        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "用户管理"]
+    else:
+        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入"]
+    
     menu = st.radio(
         "功能菜单选项",
-        ["数据库管理", "数据爬取", "LLM评估", "数据导入"],
+        menu_options,
         label_visibility="collapsed"
     )
+    
+    # 添加权限检查说明
+    if user_info['role'] != 'admin' and menu in ["数据库管理", "数据导入"]:
+        st.warning("⚠️ 部分功能需要管理员权限")
     
     # 显示系统状态和查询菜单
     st.markdown("---")
@@ -97,20 +177,24 @@ with st.sidebar:
         key="search_query_select"
     )
 
+    # 显示认证状态
+    show_auth_sidebar()
+    
     # 数据库连接状态
-    # conn = get_connection()
-    # if conn:
-    #     st.success("✅ 数据库连接正常")
-    #     conn.close()
-    # else:
-    #     st.error("❌ 数据库连接失败")
+    st.markdown("### 📊 系统状态")
+    conn = get_connection()
+    if conn:
+        st.success("✅ 数据库连接正常")
+        conn.close()
+    else:
+        st.error("❌ 数据库连接失败")
     
     # 表数量
-    # tables = get_table_names()
-    # if tables:
-    #     st.info(f"📑 当前数据库表数量: {len(tables)}")
-    # else:
-    #     st.warning("⚠️ 数据库中没有表")
+    tables = get_table_names()
+    if tables:
+        st.info(f"📑 当前数据库表数量: {len(tables)}")
+    else:
+        st.warning("⚠️ 数据库中没有表")
 
 # 查询功能处理 - 检查是否有查询选择
 query_selected = (basic_query != "请选择查询类型" or 
@@ -891,37 +975,50 @@ if query_selected:
 elif menu == "数据库管理":
     st.header("数据库管理")
     
-    # 创建选项卡
-    tab1, tab2 = st.tabs(["表操作", "数据查看"])
+    # 权限检查 - MAY NEED REVIEW
+    if user_info['role'] != 'admin':
+        st.warning("⚠️ 数据库管理功能需要管理员权限")
+        st.info("您可以查看数据，但无法进行表操作")
+        admin_tabs = ["数据查看"]
+    else:
+        admin_tabs = ["表操作", "数据查看"]
     
-    with tab1:
-        st.subheader("数据库表操作")
-        
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            # 创建表
-            if st.button("一键建表", key="create_tables"):
-                with st.spinner("创建表中..."):
-                    results = create_tables()   
-                    all_success = all([result[0] for result in results])
-                    
-                    if all_success:
-                        show_success_message("所有表创建成功！")
+    # 创建选项卡
+    if len(admin_tabs) == 1:
+        tab2 = st.container()
+    else:
+        tab1, tab2 = st.tabs(admin_tabs)
+    
+    # 只在管理员模式下显示表操作
+    if user_info['role'] == 'admin':
+        with tab1:
+            st.subheader("数据库表操作")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                # 创建表
+                if st.button("一键建表", key="create_tables"):
+                    with st.spinner("创建表中..."):
+                        results = create_tables()   
+                        all_success = all([result[0] for result in results])
+                        
+                        if all_success:
+                            show_success_message("所有表创建成功！")
+                        else:
+                            failed_tables = [f"表 {i+1}: {result[1]}" for i, result in enumerate(results) if not result[0]]
+                            show_error_message(f"部分表创建失败: {', '.join(failed_tables)}")
+                if st.button("一键查询", key="view_table_schema"):
+                    tables = get_table_names()
+                    if tables:
+                        st.info(f"当前数据库表数量: {len(tables)}")
                     else:
-                        failed_tables = [f"表 {i+1}: {result[1]}" for i, result in enumerate(results) if not result[0]]
-                        show_error_message(f"部分表创建失败: {', '.join(failed_tables)}")
-            if st.button("一键查询", key="view_table_schema"):
+                        st.warning("数据库中没有表")
+            
+            with col2:
+                # 表信息统计
                 tables = get_table_names()
-                if tables:
-                    st.info(f"当前数据库表数量: {len(tables)}")
-                else:
-                    st.warning("数据库中没有表")
-        
-        with col2:
-            # 表信息统计
-            tables = get_table_names()
-            st.metric("数据库表总数", len(tables) if tables else 0)
+                st.metric("数据库表总数", len(tables) if tables else 0)
     
     with tab2:
         st.subheader("数据查看")
@@ -1352,6 +1449,14 @@ elif menu == "LLM评估":
 elif menu == "数据导入":
     st.header("数据导入")
     
+    # 权限检查 - MAY NEED REVIEW
+    if user_info['role'] != 'admin':
+        st.warning("⚠️ 数据导入功能需要管理员权限")
+        st.info("您可以查看导入说明，但无法执行实际导入操作")
+        import_allowed = False
+    else:
+        import_allowed = True
+    
     # 创建选项卡
     tab1, tab2, tab3 = st.tabs(["文件导入", "API导入", "导入历史"])
     
@@ -1388,6 +1493,10 @@ elif menu == "数据导入":
         
         if uploaded_file is not None:
             st.markdown("### 导入设置")
+            
+            if not import_allowed:
+                st.error("❌ 需要管理员权限才能执行导入操作")
+                st.stop()
             
             if import_option == "CSV文件导入":
                 col1, col2 = st.columns(2)
@@ -1550,3 +1659,12 @@ elif menu == "数据导入":
     with tab3:
         st.subheader("导入历史")
         st.info("导入历史功能将在下一版本中提供")
+
+# 用户管理页面
+elif menu == "用户管理":
+    # 权限检查 - MAY NEED REVIEW
+    if user_info['role'] != 'admin':
+        st.error("❌ 权限不足：用户管理功能需要管理员权限")
+        st.info("请联系系统管理员获取相关权限")
+    else:
+        show_admin_panel()
