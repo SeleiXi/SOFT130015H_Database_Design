@@ -1709,13 +1709,38 @@ elif menu == "答案标注":
                             
                             answer_status_color = "🟢" if answer_annotation_status == "已标注" else "🔴"
                             
-                            with st.container():
+                            # 为每个答案创建独立的容器和操作区域
+                            answer_col1, answer_col2 = st.columns([3, 1])
+                            
+                            with answer_col1:
                                 st.markdown(f"**{answer_status_color} 答案 #{ori_ans_id} ({answer_annotation_status})**")
                                 st.success(answer_content)
                                 st.caption(f"答案创建时间: {answer_created}")
-                                
-                                if i < len(answers_data) - 1:  # 不是最后一个答案时添加分隔线
-                                    st.markdown("---")
+                            
+                            with answer_col2:
+                                if answer_annotation_status == "未标注":
+                                    # 标注该答案按钮
+                                    if st.button(f"🏷️ 标注该答案为标准答案", key=f"annotate_answer_{ori_ans_id}", use_container_width=True):
+                                        # 执行答案标注
+                                        insert_answer_query = """
+                                        INSERT INTO standard_ans (ori_ans_id, ans_content, created_by, updated_content_version, status)
+                                        VALUES (%s, %s, %s, 1, 'draft')
+                                        """
+                                        
+                                        insert_answer_params = [ori_ans_id, answer_content, user_info['user_id']]
+                                        
+                                        success_ans, result_ans = execute_query(insert_answer_query, insert_answer_params)
+                                        
+                                        if success_ans:
+                                            st.success(f"✅ 答案 #{ori_ans_id} 已成功标注为标准答案！")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"❌ 答案标注失败: {result_ans}")
+                                else:
+                                    st.success("✅ 已标注")
+                            
+                            if i < len(answers_data) - 1:  # 不是最后一个答案时添加分隔线
+                                st.markdown("---")
                     else:
                         st.warning("该问题暂无对应的答案")
                 
@@ -1723,105 +1748,25 @@ elif menu == "答案标注":
                     st.markdown("**标注操作**")
                     
                     if annotation_status == "未标注":
-                        st.info("📌 此问题尚未标注")
-                        
-                        # 获取可用的标签和用户
-                        tags_query = "SELECT tag_id, name FROM tags ORDER BY name"
-                        users_query = "SELECT user_id, username, name FROM users ORDER BY username"
-                        
-                        success_tags, tags_result = execute_query(tags_query, None, True)
-                        success_users, users_result = execute_query(users_query, None, True)
-                        
-                        if success_tags and tags_result and success_users and users_result:
-                            # 标签选择
-                            tag_options = {f"{tag[1]}": tag[0] for tag in tags_result}
-                            selected_tag = st.selectbox(
-                                "选择标签", 
-                                list(tag_options.keys()),
-                                key=f"tag_select_{ori_qs_id}"
-                            )
+                        # 标注按钮
+                        if st.button(f"🏷️ 标注为标准问题", key=f"annotate_{ori_qs_id}", use_container_width=True):
+                            # 执行标注
+                            insert_query = """
+                            INSERT INTO standard_QS (ori_qs_id, content, created_by, tag_id, updated_content_version, status)
+                            VALUES (%s, %s, %s, 1, 1, 'draft')
+                            """
                             
-                            # 标注者选择
-                            user_options = {f"{user[1]} ({user[2]})": user[0] for user in users_result}
-                            selected_user = st.selectbox(
-                                "标注者", 
-                                list(user_options.keys()),
-                                key=f"user_select_{ori_qs_id}"
-                            )
+                            insert_params = [ori_qs_id, question_content, user_info['user_id']]
                             
-                            # 可编辑问题内容
-                            use_original = st.checkbox(
-                                "使用原始内容",
-                                value=True,
-                                key=f"use_original_{ori_qs_id}"
-                            )
+                            success, result = execute_query(insert_query, insert_params)
                             
-                            edited_content = None
-                            if not use_original:
-                                edited_content = st.text_area(
-                                    "编辑问题内容",
-                                    value=question_content,
-                                    height=100,
-                                    key=f"edit_content_{ori_qs_id}"
-                                )
-                            
-                            # 标注按钮
-                            if st.button(f"🏷️ 标注为标准问题", key=f"annotate_{ori_qs_id}", use_container_width=True):
-                                tag_id = tag_options[selected_tag]
-                                user_id = user_options[selected_user]
-                                content_to_use = edited_content if not use_original else None
-                                
-                                # 执行标注
-                                insert_query = """
-                                INSERT INTO standard_QS (ori_qs_id, content, tag_id, created_by, created_at, status, version)
-                                VALUES (%s, %s, %s, %s, NOW(), 'active', 1)
-                                """
-                                
-                                final_content = content_to_use if content_to_use else question_content
-                                insert_params = [ori_qs_id, final_content, tag_id, user_id]
-                                
-                                success, result = execute_query(insert_query, insert_params)
-                                
-                                if success:
-                                    st.success(f"✅ 问题 #{ori_qs_id} 已成功标注为标准问题！")
-                                    st.rerun()
-                                else:
-                                    st.error(f"❌ 标注失败: {result}")
-                        else:
-                            st.warning("⚠️ 缺少标签或用户数据，请先添加标签和用户")
+                            if success:
+                                st.success(f"✅ 问题 #{ori_qs_id} 已成功标注为标准问题！")
+                                st.rerun()
+                            else:
+                                st.error(f"❌ 标注失败: {result}")
                     else:
                         st.success("✅ 此问题已被标注为标准问题")
-                        
-                        # 显示标注信息
-                        standard_query = """
-                        SELECT sq.qs_id, sq.content, t.name, u.username, sq.created_at, sq.status
-                        FROM standard_QS sq
-                        JOIN tags t ON sq.tag_id = t.tag_id
-                        JOIN users u ON sq.created_by = u.user_id
-                        WHERE sq.ori_qs_id = %s
-                        ORDER BY sq.created_at DESC
-                        LIMIT 1
-                        """
-                        
-                        success, standard_result = execute_query(standard_query, [ori_qs_id], True)
-                        
-                        if success and standard_result:
-                            standard_row = standard_result[0]
-                            st.info(f"**标准问题ID:** {standard_row[0]}")
-                            st.info(f"**标签:** {standard_row[2]}")
-                            st.info(f"**标注者:** {standard_row[3]}")
-                            st.info(f"**标注时间:** {standard_row[4]}")
-                            st.info(f"**状态:** {standard_row[5]}")
-                            
-                            if standard_row[1] != question_content:
-                                st.warning("**内容已编辑:**")
-                                st.text_area(
-                                    "标准问题内容",
-                                    value=standard_row[1],
-                                    height=100,
-                                    disabled=True,
-                                    key=f"standard_content_{ori_qs_id}"
-                                )
 
 # 数据导入页面
 elif menu == "数据导入":
