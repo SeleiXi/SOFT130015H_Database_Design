@@ -21,6 +21,9 @@ from components.auth_ui import (
     initialize_auth_system
 )
 
+# 导入答案标注模块
+from components.answer_annotation import create_answer_annotation_ui
+
 # 导入LLM评估模块
 try:
     from llm_evaluator import (
@@ -47,28 +50,35 @@ st.set_page_config(
 #     st.stop()
 
 # 检查登录状态
-if not require_login():
-    # 显示登录页面
-    col1, col2, col3 = st.columns([1, 2, 1])
+# if not require_login():
+#     # 显示登录页面
+#     col1, col2, col3 = st.columns([1, 2, 1])
     
-    with col2:
-        st.title("🔐 LLM问答评估系统")
-        st.markdown("---")
-        st.markdown("**请登录以继续使用系统**")
+#     with col2:
+#         st.title("🔐 LLM问答评估系统")
+#         st.markdown("---")
+#         st.markdown("**请登录以继续使用系统**")
         
-        # 显示注册表单或登录表单
-        if st.session_state.get('show_register', False):
-            show_register_form()
-        else:
-            user_info = show_login_form()
-            if user_info:
-                st.session_state.user_info = user_info
-                st.rerun()
+#         # 显示注册表单或登录表单
+#         if st.session_state.get('show_register', False):
+#             show_register_form()
+#         else:
+#             user_info = show_login_form()
+#             if user_info:
+#                 st.session_state.user_info = user_info
+#                 st.rerun()
     
-    st.stop()
+#     st.stop()
 
 # 用户已登录，显示主界面
-user_info = st.session_state.user_info
+# user_info = st.session_state.user_info
+
+# 测试用
+user_info = {
+    'user_id': 1,
+    'username': 'admin',
+    'role': 'admin'
+}
 
 # 应用标题
 col1, col2 = st.columns([3, 1])
@@ -131,9 +141,9 @@ with st.sidebar:
     
     # 根据用户角色显示不同的功能选项
     if user_info['role'] == 'admin':
-        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "用户管理"]
+        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "答案标注", "用户管理"]
     else:
-        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入"]
+        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "答案标注"]
     
     menu = st.radio(
         "功能菜单选项",
@@ -249,7 +259,14 @@ if query_selected:
         st.header("查看所有问题答案")
         st.markdown("*查询原始问题及其对应的原始答案和标准答案*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="all_qa", use_container_width=True):
+            st.session_state.all_qa_queried = True
+            st.session_state.all_qa_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('all_qa_queried', False):
+            # 初始化页码
             if "all_qa_page" not in st.session_state:
                 st.session_state.all_qa_page = 1
             
@@ -262,7 +279,7 @@ if query_selected:
                     st.success(f"{message} - 找到 {total_count} 条记录")
                     
                     if results:
-                        columns = ["问题内容", "原答案内容", "标准答案内容"]
+                        columns = ["问题内容",  "标准答案内容"]
                         
                         # 美化数据展示
                         st.markdown("#### 查询结果")
@@ -287,14 +304,6 @@ if query_selected:
                                         st.info(question_content)
                                     
                                     with col2:
-                                        st.markdown("**原答案内容:**")
-                                        answer_content = safe_string(row['原答案内容'], "暂无原答案")
-                                        if answer_content != "暂无原答案":
-                                            st.success(answer_content)
-                                        else:
-                                            st.warning(answer_content)
-                                    
-                                    with col3:
                                         st.markdown("**标准答案内容:**")
                                         std_answer_content = safe_string(row['标准答案内容'], "暂无标准答案")
                                         if std_answer_content != "暂无标准答案":
@@ -314,7 +323,14 @@ if query_selected:
         st.header("查看标签问题")
         st.markdown("*查询带有标签分类的标准问题*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="tagged_questions", use_container_width=True):
+            st.session_state.tagged_q_queried = True
+            st.session_state.tagged_q_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('tagged_q_queried', False):
+            # 初始化页码
             if "tagged_q_page" not in st.session_state:
                 st.session_state.tagged_q_page = 1
             
@@ -368,7 +384,14 @@ if query_selected:
         st.header("查看问答配对")
         st.markdown("*查询完整的标准问答配对信息，包含标签和更新历史*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="qa_pairs", use_container_width=True):
+            st.session_state.qa_pairs_queried = True
+            st.session_state.qa_pairs_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('qa_pairs_queried', False):
+            # 初始化页码
             if "qa_pairs_page" not in st.session_state:
                 st.session_state.qa_pairs_page = 1
             
@@ -436,7 +459,14 @@ if query_selected:
         st.header("LLM评估结果")
         st.markdown("*查看各种LLM模型对答案的评估分数和详细结果*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="llm_eval", use_container_width=True):
+            st.session_state.llm_eval_queried = True
+            st.session_state.llm_eval_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('llm_eval_queried', False):
+            # 初始化页码
             if "llm_eval_page" not in st.session_state:
                 st.session_state.llm_eval_page = 1
             
@@ -509,7 +539,14 @@ if query_selected:
         st.header("高分答案排行")
         st.markdown("*查看评分最高的答案排行榜*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="top_answers", use_container_width=True):
+            st.session_state.top_ans_queried = True
+            st.session_state.top_ans_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('top_ans_queried', False):
+            # 初始化页码
             if "top_ans_page" not in st.session_state:
                 st.session_state.top_ans_page = 1
             
@@ -582,7 +619,14 @@ if query_selected:
         st.header("最近更新")
         st.markdown("*查看最近的数据更新记录和操作历史*")
         
+        # 初始化或重置查询状态
         if st.button("开始查询", key="recent_updates", use_container_width=True):
+            st.session_state.recent_up_queried = True
+            st.session_state.recent_up_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('recent_up_queried', False):
+            # 初始化页码
             if "recent_up_page" not in st.session_state:
                 st.session_state.recent_up_page = 1
             
@@ -677,7 +721,14 @@ if query_selected:
     
     elif stats_query == "模型性能比较":
         st.header("模型性能比较")
+        
+        # 初始化或重置查询状态
         if st.button("开始分析", key="model_performance"):
+            st.session_state.model_perf_queried = True
+            st.session_state.model_perf_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('model_perf_queried', False):
             if "model_perf_page" not in st.session_state:
                 st.session_state.model_perf_page = 1
             
@@ -695,7 +746,14 @@ if query_selected:
     
     elif stats_query == "标签分布统计":
         st.header("标签分布统计")
+        
+        # 初始化或重置查询状态
         if st.button("开始统计", key="tag_dist"):
+            st.session_state.tag_dist_queried = True
+            st.session_state.tag_dist_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('tag_dist_queried', False):
             if "tag_dist_page" not in st.session_state:
                 st.session_state.tag_dist_page = 1
             
@@ -713,7 +771,14 @@ if query_selected:
     
     elif stats_query == "模型成本分析":
         st.header("模型成本分析")
+        
+        # 初始化或重置查询状态
         if st.button("开始分析", key="cost_analysis"):
+            st.session_state.cost_queried = True
+            st.session_state.cost_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('cost_queried', False):
             if "cost_page" not in st.session_state:
                 st.session_state.cost_page = 1
             
@@ -731,7 +796,14 @@ if query_selected:
     
     elif stats_query == "答案长度分析":
         st.header("答案长度分析")
+        
+        # 初始化或重置查询状态
         if st.button("开始分析", key="length_analysis"):
+            st.session_state.length_queried = True
+            st.session_state.length_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('length_queried', False):
             if "length_page" not in st.session_state:
                 st.session_state.length_page = 1
             
@@ -749,7 +821,14 @@ if query_selected:
     
     elif stats_query == "评估趋势分析":
         st.header("评估趋势分析")
+        
+        # 初始化或重置查询状态
         if st.button("开始分析", key="eval_trends"):
+            st.session_state.trends_queried = True
+            st.session_state.trends_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('trends_queried', False):
             if "trends_page" not in st.session_state:
                 st.session_state.trends_page = 1
             
@@ -767,7 +846,14 @@ if query_selected:
     
     elif stats_query == "问题复杂度分析":
         st.header("问题复杂度分析")
+        
+        # 初始化或重置查询状态
         if st.button("开始分析", key="complexity_analysis"):
+            st.session_state.complex_queried = True
+            st.session_state.complex_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('complex_queried', False):
             if "complex_page" not in st.session_state:
                 st.session_state.complex_page = 1
             
@@ -785,7 +871,14 @@ if query_selected:
     
     elif stats_query == "查找孤立记录":
         st.header("查找孤立记录")
+        
+        # 初始化或重置查询状态
         if st.button("开始检查", key="orphan_records"):
+            st.session_state.orphan_queried = True
+            st.session_state.orphan_page = 1
+        
+        # 执行查询逻辑
+        if st.session_state.get('orphan_queried', False):
             if "orphan_page" not in st.session_state:
                 st.session_state.orphan_page = 1
             
@@ -841,13 +934,21 @@ if query_selected:
         with col2:
             search_by_tag = st.button("搜索", key="search_by_tag")
         
+        # 初始化或重置搜索状态
         if search_by_tag and tag_search:
+            st.session_state.tag_search_queried = True
+            st.session_state.tag_search_term = tag_search
+            st.session_state.tag_search_page = 1
+        
+        # 执行搜索逻辑
+        if (st.session_state.get('tag_search_queried', False) and 
+            st.session_state.get('tag_search_term')):
             if "tag_search_page" not in st.session_state:
                 st.session_state.tag_search_page = 1
             
             with st.spinner("搜索中..."):
                 success, message, total_count, results, total_pages = get_questions_by_tag(
-                    tag_search, st.session_state.tag_search_page, page_size
+                    st.session_state.tag_search_term, st.session_state.tag_search_page, page_size
                 )
                 
                 if success:
@@ -867,13 +968,23 @@ if query_selected:
         with col3:
             search_by_score = st.button("搜索", key="search_by_score")
         
+        # 初始化或重置搜索状态
         if search_by_score:
+            st.session_state.score_search_queried = True
+            st.session_state.score_search_min = min_score
+            st.session_state.score_search_max = max_score
+            st.session_state.score_search_page = 1
+        
+        # 执行搜索逻辑
+        if st.session_state.get('score_search_queried', False):
             if "score_search_page" not in st.session_state:
                 st.session_state.score_search_page = 1
             
             with st.spinner("搜索中..."):
                 success, message, total_count, results, total_pages = get_answers_by_score_range(
-                    min_score, max_score, st.session_state.score_search_page, page_size
+                    st.session_state.get('score_search_min', 0.0), 
+                    st.session_state.get('score_search_max', 100.0), 
+                    st.session_state.score_search_page, page_size
                 )
                 
                 if success:
@@ -891,13 +1002,21 @@ if query_selected:
         with col2:
             search_content_btn = st.button("搜索", key="search_content")
         
+        # 初始化或重置搜索状态
         if search_content_btn and content_search:
+            st.session_state.content_search_queried = True
+            st.session_state.content_search_term = content_search
+            st.session_state.content_search_page = 1
+        
+        # 执行搜索逻辑
+        if (st.session_state.get('content_search_queried', False) and 
+            st.session_state.get('content_search_term')):
             if "content_search_page" not in st.session_state:
                 st.session_state.content_search_page = 1
             
             with st.spinner("搜索中..."):
                 success, message, total_count, results, total_pages = search_content(
-                    content_search, st.session_state.content_search_page, page_size
+                    st.session_state.content_search_term, st.session_state.content_search_page, page_size
                 )
                 
                 if success:
@@ -1437,6 +1556,272 @@ elif menu == "LLM评估":
                             
                     except Exception as e:
                         st.error(f"❌ 生成对比报告失败: {str(e)}")
+
+# 答案标注页面
+elif menu == "答案标注":
+    st.header("📝 问题答案标注管理")
+    st.markdown("*查看所有原始问题及其对应的原始答案，并将其标注为标准问题*")
+    
+    # 分页设置
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        search_term = st.text_input("搜索问题内容", placeholder="输入问题关键词进行搜索...", key="annotation_search")
+    with col2:
+        page_size = st.selectbox("每页显示数量", [5, 10, 20, 30], index=1, key="annotation_page_size")
+    
+    # 初始化页码和搜索状态
+    if 'annotation_page' not in st.session_state:
+        st.session_state.annotation_page = 1
+    if 'annotation_search_term' not in st.session_state:
+        st.session_state.annotation_search_term = ""
+    if 'annotation_prev_page_size' not in st.session_state:
+        st.session_state.annotation_prev_page_size = page_size
+    
+    # 检查搜索条件或页面大小变化，重置页码
+    if (search_term != st.session_state.annotation_search_term or 
+        page_size != st.session_state.annotation_prev_page_size):
+        st.session_state.annotation_page = 1
+        st.session_state.annotation_search_term = search_term
+        st.session_state.annotation_prev_page_size = page_size
+    
+    # 构建查询
+    search_condition = ""
+    search_params = []
+    
+    if search_term:
+        search_condition = "WHERE oq.content LIKE %s"
+        search_params.append(f"%{search_term}%")
+    
+    # 获取总数
+    count_query = f"""
+    SELECT COUNT(DISTINCT oq.ori_qs_id)
+    FROM ori_qs oq
+    {search_condition}
+    """
+    
+    success, count_result = execute_query(count_query, search_params, True)
+    total_count = count_result[0][0] if success and count_result else 0
+    total_pages = (total_count + page_size - 1) // page_size if total_count > 0 else 1
+    
+    # 获取问题和答案数据
+    offset = (st.session_state.annotation_page - 1) * page_size
+    
+    data_query = f"""
+    SELECT 
+        oq.ori_qs_id,
+        oq.content AS question_content,
+        oq.created_at AS question_created,
+        COUNT(oa.ori_ans_id) AS answer_count,
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM standard_QS sq WHERE sq.ori_qs_id = oq.ori_qs_id) THEN '已标注'
+            ELSE '未标注'
+        END AS annotation_status
+    FROM ori_qs oq
+    LEFT JOIN ori_ans oa ON oq.ori_qs_id = oa.ori_qs_id
+    {search_condition}
+    GROUP BY oq.ori_qs_id, oq.content, oq.created_at
+    ORDER BY oq.created_at DESC
+    LIMIT %s OFFSET %s
+    """
+    
+    query_params = search_params + [page_size, offset]
+    success, questions_data = execute_query(data_query, query_params, True)
+    
+    if not success:
+        st.error(f"数据获取失败: {questions_data}")
+    elif not questions_data:
+        st.info("暂无问题数据")
+    else:
+        # 分页控件
+        if total_pages > 1:
+            col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
+            
+            with col1:
+                if st.button("首页", key="annotation_first_page") and st.session_state.annotation_page > 1:
+                    st.session_state.annotation_page = 1
+                    st.rerun()
+            
+            with col2:
+                if st.button("上页", key="annotation_prev_page") and st.session_state.annotation_page > 1:
+                    st.session_state.annotation_page -= 1
+                    st.rerun()
+            
+            with col3:
+                new_page = st.number_input(
+                    f"页码 (共 {total_pages} 页)", 
+                    min_value=1, 
+                    max_value=total_pages, 
+                    value=st.session_state.annotation_page,
+                    key="annotation_page_input"
+                )
+                if new_page != st.session_state.annotation_page:
+                    st.session_state.annotation_page = new_page
+                    st.rerun()
+            
+            with col4:
+                if st.button("下页", key="annotation_next_page") and st.session_state.annotation_page < total_pages:
+                    st.session_state.annotation_page += 1
+                    st.rerun()
+            
+            with col5:
+                if st.button("末页", key="annotation_last_page") and st.session_state.annotation_page < total_pages:
+                    st.session_state.annotation_page = total_pages
+                    st.rerun()
+        
+        st.markdown(f"### 📋 问题列表 (共 {total_count} 条记录，第 {st.session_state.annotation_page}/{total_pages} 页)")
+        
+        # 显示问题和答案数据
+        for question_row in questions_data:
+            ori_qs_id, question_content, question_created, answer_count, annotation_status = question_row
+            
+            # 获取该问题对应的所有答案
+            answers_query = """
+            SELECT 
+                oa.ori_ans_id,
+                oa.content AS answer_content,
+                oa.created_at AS answer_created,
+                CASE 
+                    WHEN sa.ans_id IS NOT NULL THEN '已标注'
+                    ELSE '未标注'
+                END AS answer_annotation_status
+            FROM ori_ans oa
+            LEFT JOIN standard_ans sa ON oa.ori_ans_id = sa.ori_ans_id
+            WHERE oa.ori_qs_id = %s
+            ORDER BY oa.created_at DESC
+            """
+            
+            success, answers_data = execute_query(answers_query, [ori_qs_id], True)
+            
+            status_color = "🟢" if annotation_status == "已标注" else "🔴"
+            
+            with st.expander(f"{status_color} 问题 #{ori_qs_id} - {annotation_status} (包含 {answer_count} 个答案)", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                
+                with col1:
+                    st.markdown("**原始问题内容:**")
+                    st.info(question_content)
+                    st.caption(f"创建时间: {question_created}")
+                    
+                    if success and answers_data:
+                        st.markdown("**对应的原始答案:**")
+                        for i, answer_row in enumerate(answers_data):
+                            ori_ans_id, answer_content, answer_created, answer_annotation_status = answer_row
+                            
+                            answer_status_color = "🟢" if answer_annotation_status == "已标注" else "🔴"
+                            
+                            with st.container():
+                                st.markdown(f"**{answer_status_color} 答案 #{ori_ans_id} ({answer_annotation_status})**")
+                                st.success(answer_content)
+                                st.caption(f"答案创建时间: {answer_created}")
+                                
+                                if i < len(answers_data) - 1:  # 不是最后一个答案时添加分隔线
+                                    st.markdown("---")
+                    else:
+                        st.warning("该问题暂无对应的答案")
+                
+                with col2:
+                    st.markdown("**标注操作**")
+                    
+                    if annotation_status == "未标注":
+                        st.info("📌 此问题尚未标注")
+                        
+                        # 获取可用的标签和用户
+                        tags_query = "SELECT tag_id, name FROM tags ORDER BY name"
+                        users_query = "SELECT user_id, username, name FROM users ORDER BY username"
+                        
+                        success_tags, tags_result = execute_query(tags_query, None, True)
+                        success_users, users_result = execute_query(users_query, None, True)
+                        
+                        if success_tags and tags_result and success_users and users_result:
+                            # 标签选择
+                            tag_options = {f"{tag[1]}": tag[0] for tag in tags_result}
+                            selected_tag = st.selectbox(
+                                "选择标签", 
+                                list(tag_options.keys()),
+                                key=f"tag_select_{ori_qs_id}"
+                            )
+                            
+                            # 标注者选择
+                            user_options = {f"{user[1]} ({user[2]})": user[0] for user in users_result}
+                            selected_user = st.selectbox(
+                                "标注者", 
+                                list(user_options.keys()),
+                                key=f"user_select_{ori_qs_id}"
+                            )
+                            
+                            # 可编辑问题内容
+                            use_original = st.checkbox(
+                                "使用原始内容",
+                                value=True,
+                                key=f"use_original_{ori_qs_id}"
+                            )
+                            
+                            edited_content = None
+                            if not use_original:
+                                edited_content = st.text_area(
+                                    "编辑问题内容",
+                                    value=question_content,
+                                    height=100,
+                                    key=f"edit_content_{ori_qs_id}"
+                                )
+                            
+                            # 标注按钮
+                            if st.button(f"🏷️ 标注为标准问题", key=f"annotate_{ori_qs_id}", use_container_width=True):
+                                tag_id = tag_options[selected_tag]
+                                user_id = user_options[selected_user]
+                                content_to_use = edited_content if not use_original else None
+                                
+                                # 执行标注
+                                insert_query = """
+                                INSERT INTO standard_QS (ori_qs_id, content, tag_id, created_by, created_at, status, version)
+                                VALUES (%s, %s, %s, %s, NOW(), 'active', 1)
+                                """
+                                
+                                final_content = content_to_use if content_to_use else question_content
+                                insert_params = [ori_qs_id, final_content, tag_id, user_id]
+                                
+                                success, result = execute_query(insert_query, insert_params)
+                                
+                                if success:
+                                    st.success(f"✅ 问题 #{ori_qs_id} 已成功标注为标准问题！")
+                                    st.rerun()
+                                else:
+                                    st.error(f"❌ 标注失败: {result}")
+                        else:
+                            st.warning("⚠️ 缺少标签或用户数据，请先添加标签和用户")
+                    else:
+                        st.success("✅ 此问题已被标注为标准问题")
+                        
+                        # 显示标注信息
+                        standard_query = """
+                        SELECT sq.qs_id, sq.content, t.name, u.username, sq.created_at, sq.status
+                        FROM standard_QS sq
+                        JOIN tags t ON sq.tag_id = t.tag_id
+                        JOIN users u ON sq.created_by = u.user_id
+                        WHERE sq.ori_qs_id = %s
+                        ORDER BY sq.created_at DESC
+                        LIMIT 1
+                        """
+                        
+                        success, standard_result = execute_query(standard_query, [ori_qs_id], True)
+                        
+                        if success and standard_result:
+                            standard_row = standard_result[0]
+                            st.info(f"**标准问题ID:** {standard_row[0]}")
+                            st.info(f"**标签:** {standard_row[2]}")
+                            st.info(f"**标注者:** {standard_row[3]}")
+                            st.info(f"**标注时间:** {standard_row[4]}")
+                            st.info(f"**状态:** {standard_row[5]}")
+                            
+                            if standard_row[1] != question_content:
+                                st.warning("**内容已编辑:**")
+                                st.text_area(
+                                    "标准问题内容",
+                                    value=standard_row[1],
+                                    height=100,
+                                    disabled=True,
+                                    key=f"standard_content_{ori_qs_id}"
+                                )
 
 # 数据导入页面
 elif menu == "数据导入":

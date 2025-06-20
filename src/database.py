@@ -74,22 +74,36 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS ori_qs (
             ori_qs_id INT PRIMARY KEY AUTO_INCREMENT,
-            content TEXT NOT NULL
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FULLTEXT INDEX ft_content (content)
         )
         """,
         """
         CREATE TABLE IF NOT EXISTS updated_content (
             updated_content_version INT PRIMARY KEY AUTO_INCREMENT,
             content TEXT NOT NULL,
-            operation VARCHAR(50) NOT NULL
+            operation VARCHAR(50) NOT NULL CHECK (operation IN ('CREATE', 'EDIT', 'DELETE', 'REVIEW', 'APPROVE', 'MERGE')),
+            created_by INT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_operation (operation),
+            INDEX idx_created_at (created_at),
+            FOREIGN KEY (created_by) REFERENCES User(user_id) ON DELETE SET NULL
         )
         """,
         """
         CREATE TABLE IF NOT EXISTS llm_type (
             llm_type_id INT PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(100) NOT NULL,
-            params BIGINT NOT NULL,
-            costs_per_million_token DECIMAL(10,2) NOT NULL
+            name VARCHAR(100) NOT NULL UNIQUE,
+            params BIGINT NOT NULL CHECK (params > 0),
+            costs_per_million_token DECIMAL(10,2) NOT NULL CHECK (costs_per_million_token >= 0),
+            description TEXT DEFAULT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_name (name),
+            INDEX idx_is_active (is_active)
         )
         """,
         """
@@ -101,14 +115,28 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS User (
             user_id INT PRIMARY KEY AUTO_INCREMENT,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
             name VARCHAR(100) NOT NULL,
-            role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'evaluator', 'guest'))
+            role VARCHAR(20) NOT NULL DEFAULT 'guest' CHECK (role IN ('admin', 'evaluator', 'guest', 'user')),
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP NULL DEFAULT NULL,
+            INDEX idx_username (username),
+            INDEX idx_role (role),
+            INDEX idx_is_active (is_active)
         )
         """,
         """
-        CREATE TABLE IF NOT EXISTS original_ans (
+        CREATE TABLE IF NOT EXISTS ori_ans (
             ori_ans_id INT PRIMARY KEY AUTO_INCREMENT,
-            content TEXT NOT NULL
+            content TEXT NOT NULL,
+            ori_qs_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_ori_qs (ori_qs_id),
+            FULLTEXT INDEX ft_content (content),
+            FOREIGN KEY (ori_qs_id) REFERENCES ori_qs(ori_qs_id) ON DELETE CASCADE
         )
         """,
         """
@@ -116,12 +144,25 @@ def create_tables():
             ans_id INT PRIMARY KEY AUTO_INCREMENT,
             ans_content TEXT NOT NULL,
             ori_ans_id INT NOT NULL,
-            eval_id INT,
-            std_ans_id INT,
-            std_qs_id INT,
+            eval_id INT DEFAULT NULL,
+            std_ans_id INT DEFAULT NULL,
+            std_qs_id INT DEFAULT NULL,
             updated_content_version INT NOT NULL,
-            FOREIGN KEY (ori_ans_id) REFERENCES original_ans(ori_ans_id),
-            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version)
+            created_by INT DEFAULT NULL,
+            approved_by INT DEFAULT NULL,
+            status ENUM('draft', 'review', 'approved', 'archived') DEFAULT 'draft',
+            quality_score DECIMAL(3,2) DEFAULT NULL CHECK (quality_score >= 0 AND quality_score <= 5),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_ori_ans (ori_ans_id),
+            INDEX idx_status (status),
+            INDEX idx_quality_score (quality_score),
+            INDEX idx_created_at (created_at),
+            FULLTEXT INDEX ft_ans_content (ans_content),
+            FOREIGN KEY (ori_ans_id) REFERENCES ori_ans(ori_ans_id) ON DELETE CASCADE,
+            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version) ON DELETE RESTRICT,
+            FOREIGN KEY (created_by) REFERENCES User(user_id) ON DELETE SET NULL,
+            FOREIGN KEY (approved_by) REFERENCES User(user_id) ON DELETE SET NULL
         )
         """,
         """
@@ -130,9 +171,17 @@ def create_tables():
             llm_answer TEXT NOT NULL,
             llm_type_id INT NOT NULL,
             std_ans_id INT NOT NULL,
-            llm_score DECIMAL(5,2) NOT NULL,
-            FOREIGN KEY (llm_type_id) REFERENCES llm_type(llm_type_id),
-            FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id)
+            llm_score DECIMAL(5,2) NOT NULL CHECK (llm_score >= 0 AND llm_score <= 5),
+            evaluated_by INT DEFAULT NULL,
+            evaluation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            notes TEXT DEFAULT NULL,
+            INDEX idx_llm_type (llm_type_id),
+            INDEX idx_std_ans (std_ans_id),
+            INDEX idx_score (llm_score),
+            INDEX idx_evaluation_date (evaluation_date),
+            FOREIGN KEY (llm_type_id) REFERENCES llm_type(llm_type_id) ON DELETE CASCADE,
+            FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id) ON DELETE CASCADE,
+            FOREIGN KEY (evaluated_by) REFERENCES User(user_id) ON DELETE SET NULL
         )
         """,
         """
@@ -141,33 +190,26 @@ def create_tables():
             content TEXT NOT NULL,
             ori_qs_id INT NOT NULL,
             tag_id INT NOT NULL,
-            std_ans_id INT,
+            std_ans_id INT DEFAULT NULL,
             updated_content_version INT NOT NULL,
-            FOREIGN KEY (ori_qs_id) REFERENCES ori_qs(ori_qs_id),
-            FOREIGN KEY (tag_id) REFERENCES tags(tag_id),
-            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version)
+            created_by INT DEFAULT NULL,
+            approved_by INT DEFAULT NULL,
+            status ENUM('draft', 'review', 'approved', 'archived') DEFAULT 'draft',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_ori_qs (ori_qs_id),
+            INDEX idx_tag (tag_id),
+            INDEX idx_status (status),
+            INDEX idx_created_at (created_at),
+            FULLTEXT INDEX ft_content (content),
+            FOREIGN KEY (ori_qs_id) REFERENCES ori_qs(ori_qs_id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(tag_id) ON DELETE RESTRICT,
+            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version) ON DELETE RESTRICT,
+            FOREIGN KEY (created_by) REFERENCES User(user_id) ON DELETE SET NULL,
+            FOREIGN KEY (approved_by) REFERENCES User(user_id) ON DELETE SET NULL
         )
         """,
-        """
-        ALTER TABLE standard_ans 
-        ADD CONSTRAINT fk_std_ans_eval
-        FOREIGN KEY (eval_id) REFERENCES llm_evaluation(eval_id)
-        """,
-        """
-        ALTER TABLE standard_ans 
-        ADD CONSTRAINT fk_std_ans_self
-        FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id)
-        """,
-        """
-        ALTER TABLE standard_ans 
-        ADD CONSTRAINT fk_std_ans_qs
-        FOREIGN KEY (std_qs_id) REFERENCES standard_QS(std_qs_id)
-        """,
-        """
-        ALTER TABLE standard_QS 
-        ADD CONSTRAINT fk_std_qs_ans
-        FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id)
-        """,
+
         """
         CREATE TABLE IF NOT EXISTS standard_pair (
             pair_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -175,10 +217,56 @@ def create_tables():
             std_ans_id INT NOT NULL,
             eval_id INT NOT NULL,
             updated_content_version INT NOT NULL,
-            FOREIGN KEY (std_qs_id) REFERENCES standard_QS(std_qs_id),
-            FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id),
-            FOREIGN KEY (eval_id) REFERENCES llm_evaluation(eval_id),
-            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version)
+            created_by INT DEFAULT NULL,
+            confidence_score DECIMAL(3,2) DEFAULT NULL CHECK (confidence_score >= 0 AND confidence_score <= 1),
+            is_verified BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            verified_at TIMESTAMP NULL DEFAULT NULL,
+            INDEX idx_std_qs (std_qs_id),
+            INDEX idx_std_ans (std_ans_id),
+            INDEX idx_eval (eval_id),
+            INDEX idx_confidence (confidence_score),
+            INDEX idx_verified (is_verified),
+            FOREIGN KEY (std_qs_id) REFERENCES standard_QS(std_qs_id) ON DELETE CASCADE,
+            FOREIGN KEY (std_ans_id) REFERENCES standard_ans(ans_id) ON DELETE CASCADE,
+            FOREIGN KEY (eval_id) REFERENCES llm_evaluation(eval_id) ON DELETE CASCADE,
+            FOREIGN KEY (updated_content_version) REFERENCES updated_content(updated_content_version) ON DELETE RESTRICT,
+            FOREIGN KEY (created_by) REFERENCES User(user_id) ON DELETE SET NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            session_id VARCHAR(128) PRIMARY KEY,
+            user_id INT NOT NULL,
+            ip_address VARCHAR(45) DEFAULT NULL,
+            user_agent TEXT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            expires_at TIMESTAMP NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            INDEX idx_user_id (user_id),
+            INDEX idx_expires_at (expires_at),
+            INDEX idx_is_active (is_active),
+            FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS system_logs (
+            log_id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT DEFAULT NULL,
+            action VARCHAR(100) NOT NULL,
+            table_name VARCHAR(50) DEFAULT NULL,
+            record_id INT DEFAULT NULL,
+            old_values JSON DEFAULT NULL,
+            new_values JSON DEFAULT NULL,
+            ip_address VARCHAR(45) DEFAULT NULL,
+            user_agent TEXT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_user_id (user_id),
+            INDEX idx_action (action),
+            INDEX idx_table_name (table_name),
+            INDEX idx_created_at (created_at),
+            FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE SET NULL
         )
         """
     ]
@@ -356,18 +444,12 @@ def get_all_questions_with_answers(page=1, page_size=10):
     query = """
         SELECT
             oq.content AS question_content,
-            oa.content AS answer_content,
-            sa.ans_content AS std_answer_content
-        FROM
-            ori_qs oq
-        LEFT JOIN
-            standard_QS sq ON oq.ori_qs_id = sq.ori_qs_id
-        LEFT JOIN
-            standard_ans sa ON sq.std_ans_id = sa.ans_id
-        LEFT JOIN
-            original_ans oa ON sa.ori_ans_id = oa.ori_ans_id
-        ORDER BY
-            oq.ori_qs_id
+            COALESCE(oa.content, '暂无原答案') AS original_answer_content,
+            COALESCE(sa.ans_content, '暂无标准答案') AS standard_answer_content
+        FROM ori_qs oq
+        LEFT JOIN ori_ans oa ON oq.ori_qs_id = oa.ori_qs_id
+        LEFT JOIN standard_ans sa ON oa.ori_ans_id = sa.ori_ans_id
+        ORDER BY oq.ori_qs_id
     """
     
     #     SELECT 
@@ -557,7 +639,7 @@ def get_database_statistics():
     """获取数据库统计信息"""
     stats_queries = {
         "总问题数": "SELECT COUNT(*) FROM ori_qs",
-        "总答案数": "SELECT COUNT(*) FROM original_ans", 
+        "总答案数": "SELECT COUNT(*) FROM ori_ans", 
         "标准问题数": "SELECT COUNT(*) FROM standard_QS",
         "标准答案数": "SELECT COUNT(*) FROM standard_ans",
         "评估记录数": "SELECT COUNT(*) FROM llm_evaluation",
@@ -694,7 +776,7 @@ def get_orphan_records(page=1, page_size=10):
         oa.ori_ans_id as id,
         LEFT(oa.content, 100) as content,
         'No associated questions' as issue
-    FROM original_ans oa
+    FROM ori_ans oa
     LEFT JOIN standard_ans sa ON oa.ori_ans_id = sa.ori_ans_id
     LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
     WHERE sq.std_qs_id IS NULL

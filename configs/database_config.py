@@ -9,7 +9,7 @@ def get_database_config() -> Dict[str, Any]:
         'host': os.getenv('DB_HOST', 'localhost'),
         'user': os.getenv('DB_USER', 'root'),
         'password': os.getenv('DB_PASSWORD', 'root'),
-        'database': os.getenv('DB_NAME', 'db_design_pj'),
+        'database': os.getenv('DB_NAME', 'database_design_pj_final'),
         'port': int(os.getenv('DB_PORT', '3306')),
         'charset': os.getenv('DB_CHARSET', 'utf8mb4'),
         'autocommit': os.getenv('DB_AUTOCOMMIT', 'True').lower() == 'true',
