@@ -349,18 +349,25 @@ def get_paginated_query(query, params=None, page=1, page_size=10):
     else:
         return False, result, 0, [], 0
 
+
+        # oq.content as question_content,
 def get_all_questions_with_answers(page=1, page_size=10):
     """获取所有问题及其对应的答案"""
     query = """
-    SELECT 
-        COALESCE(oq.content, '暂无问题内容') as question_content,
-        COALESCE(oa.content, '暂无原答案') as answer_content,
-        COALESCE(sa.ans_content, '暂无标准答案') as std_answer_content
-    FROM ori_qs oq
-    RIGHT JOIN standard_QS sq ON oq.ori_qs_id = sq.ori_qs_id 
-    RIGHT JOIN standard_ans sa ON sq.std_ans_id = sa.ans_id
-    RIGHT JOIN original_ans oa ON sa.ori_ans_id = oa.ori_ans_id
-    ORDER BY COALESCE(oq.ori_qs_id, sq.std_qs_id)
+        SELECT
+            oq.content AS question_content,
+            oa.content AS answer_content,
+            sa.ans_content AS std_answer_content
+        FROM
+            ori_qs oq
+        LEFT JOIN
+            standard_QS sq ON oq.ori_qs_id = sq.ori_qs_id
+        LEFT JOIN
+            standard_ans sa ON sq.std_ans_id = sa.ans_id
+        LEFT JOIN
+            original_ans oa ON sa.ori_ans_id = oa.ori_ans_id
+        ORDER BY
+            oq.ori_qs_id
     """
     
     #     SELECT 
