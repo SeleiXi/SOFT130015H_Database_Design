@@ -84,7 +84,7 @@ user_info = {
 col1, col2 = st.columns([3, 1])
 with col1:
     st.title("LLM问答评估系统")
-    st.markdown("本系统用于LLM问答数据的管理、爬取和评估，支持多种模型评估比对")
+    st.markdown("本系统用于LLM问答数据的管理、标注和评估，支持多种模型评估比对")
 
 with col2:
     # 显示用户信息
@@ -126,9 +126,9 @@ with st.expander("使用说明"):
     st.markdown("""
     **基本功能介绍：**
     - **数据库管理**：创建和查看表结构，查看表数据
-    - **数据爬取**：从StackExchange爬取问答数据
     - **LLM评估**：使用多种LLM模型评估问答质量
     - **数据导入**：导入现有数据到系统
+    - **答案标注**：标注原始问题和答案为标准问答
     """)
 
 # 侧边栏设置
@@ -141,9 +141,9 @@ with st.sidebar:
     
     # 根据用户角色显示不同的功能选项
     if user_info['role'] == 'admin':
-        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "答案标注", "用户管理"]
+        menu_options = ["数据库管理", "LLM评估", "数据导入", "答案标注", "用户管理"]
     else:
-        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "答案标注"]
+        menu_options = ["LLM评估", "数据导入", "答案标注"]
     
     menu = st.radio(
         "功能菜单选项",
@@ -1176,50 +1176,6 @@ elif menu == "数据库管理":
                             conn.close()
                         else:
                             show_error_message("无法连接到数据库")
-
-# 数据爬取页面
-elif menu == "数据爬取":
-    st.header("数据爬取")
-    
-    # 创建选项卡
-    tab1, tab2, tab3 = st.tabs(["StackExchange爬取", "自定义爬取", "爬取历史"])
-    
-    with tab1:
-        st.subheader("爬取StackExchange数据")
-        
-        col1, col2, col3 = st.columns([2, 2, 1])
-        
-        with col1:
-            st.markdown("#### 基本设置")
-            topic = st.text_input("主题", "database")
-            tag = st.text_input("标签", "sql")
-        
-        with col2:
-            st.markdown("#### 筛选条件")
-            min_votes = st.number_input("最少投票数", min_value=1, value=10)
-            limit = st.number_input("爬取数量", min_value=1, value=50)
-            
-            advanced = st.checkbox("高级选项")
-            if advanced:
-                sort_by = st.selectbox(
-                    "排序方式",
-                    ["votes", "activity", "creation", "relevance"],
-                    index=0
-                )
-        
-        with col3:
-            st.markdown("#### 操作")
-            if st.button("开始爬取", key="start_crawl"):
-                with st.spinner("爬取中..."):
-                    st.info("爬取功能尚未实现，此处为界面展示")
-    
-    with tab2:
-        st.subheader("自定义爬取")
-        st.info("自定义爬取功能将在下一版本中提供")
-    
-    with tab3:
-        st.subheader("爬取历史")
-        st.info("爬取历史功能将在下一版本中提供")
 
 # LLM评估页面
 elif menu == "LLM评估":
