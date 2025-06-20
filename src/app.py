@@ -508,7 +508,7 @@ if query_selected:
                                         st.info(f"参数量: {row['模型参数']}")
                                         
                                         st.markdown("**评估分数:**")
-                                        st.metric("分数", f"{score:.1f}", delta=f"{score-75:.1f}" if score > 0 else None)
+                                        st.metric("分数", f"{score:.1f}")
                                         
                                         if row['问题内容']:
                                             st.markdown("**问题:**")
@@ -1258,110 +1258,6 @@ elif menu == "LLM评估":
             
             # 高级设置
             with st.expander("高级设置"):
-                # Prompt配置
-                st.markdown("#### 📝 评估Prompt配置")
-                
-                # 默认prompt
-                default_prompt = """请作为一个专业的问答质量评估专家，对以下问答对进行评估。
-
-**评估标准：**
-1. 答案准确性 (30%)：答案是否正确回答了问题
-2. 内容完整性 (25%)：答案是否全面覆盖了问题要点  
-3. 表达清晰度 (20%)：答案是否表达清晰、易于理解
-4. 专业性 (15%)：答案是否体现了专业知识和深度
-5. 相关性 (10%)：答案是否与问题高度相关
-
-**问题：** {question}
-
-**答案：** {answer}
-
-请基于以上标准，给出0-100分的评分，并简要说明评分理由。
-输出格式：
-评分：[分数]
-理由：[评分理由]"""
-                
-                use_custom_prompt = st.checkbox(
-                    "使用自定义Prompt", 
-                    value=False,
-                    help="启用后可以自定义评估prompt，否则使用默认prompt"
-                )
-                
-                if use_custom_prompt:
-                    st.info("💡 自定义Prompt中请使用 {question} 和 {answer} 作为占位符")
-                    
-                    # 预设模板选择
-                    prompt_templates = {
-                        "默认评估模板": default_prompt,
-                        "简洁评分模板": """请对以下问答对进行评分（0-100分）：
-
-问题：{question}
-答案：{answer}
-
-请给出评分和简要理由。""",
-                        "详细分析模板": """作为专业评估专家，请详细分析以下问答对：
-
-问题：{question}
-答案：{answer}
-
-请从以下维度评估：
-1. 准确性（是否正确回答问题）
-2. 完整性（是否覆盖关键要点）
-3. 清晰度（表达是否清楚易懂）
-4. 专业性（是否体现专业水准）
-
-最终评分：0-100分
-详细分析：[请提供具体分析]""",
-                        "技术问答模板": """请评估这个技术问答对的质量：
-
-问题：{question}
-答案：{answer}
-
-评估标准：
-- 技术准确性（40%）
-- 实用性（30%）
-- 代码示例质量（20%）
-- 表达清晰度（10%）
-
-评分：0-100分
-技术评估：[具体评价]"""
-                    }
-                    
-                    selected_template = st.selectbox(
-                        "选择Prompt模板",
-                        list(prompt_templates.keys()),
-                        help="选择预设模板或自定义编写"
-                    )
-                    
-                    custom_prompt = st.text_area(
-                        "自定义评估Prompt",
-                        value=prompt_templates[selected_template],
-                        height=200,
-                        help="请在prompt中使用 {question} 和 {answer} 作为占位符"
-                    )
-                    
-                    # 验证prompt格式和显示统计信息
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if "{question}" not in custom_prompt or "{answer}" not in custom_prompt:
-                            st.error("⚠️ Prompt中必须包含 {question} 和 {answer} 占位符")
-                        else:
-                            st.success("✅ Prompt格式正确")
-                    
-                    with col2:
-                        prompt_length = len(custom_prompt)
-                        st.info(f"📏 Prompt长度: {prompt_length} 字符")
-                        if prompt_length > 2000:
-                            st.warning("Prompt较长，可能增加API成本")
-                    
-                    evaluation_prompt = custom_prompt
-                else:
-                    st.info("📋 使用默认评估Prompt")
-                    with st.expander("查看默认Prompt", expanded=False):
-                        st.code(default_prompt, language="text")
-                    evaluation_prompt = default_prompt
-                
-                st.markdown("---")
-                
                 criteria = st.text_area(
                     "自定义评估标准", 
                     value="标准问答评估",
@@ -1369,21 +1265,6 @@ elif menu == "LLM评估":
                 )
                 
                 show_progress = st.checkbox("显示详细进度", value=True)
-                
-                # Prompt预览功能
-                st.markdown("#### 🔍 Prompt预览")
-                if st.button("预览Prompt效果", key="preview_prompt"):
-                    # 使用示例数据预览prompt
-                    sample_question = "什么是数据库索引？"
-                    sample_answer = "数据库索引是一种数据结构，用于提高数据库查询的性能。它创建了指向表中数据的快速访问路径。"
-                    
-                    preview_prompt = evaluation_prompt.format(
-                        question=sample_question,
-                        answer=sample_answer
-                    )
-                    
-                    st.markdown("**预览效果：**")
-                    st.code(preview_prompt, language="text")
                 
             # 预估成本显示
             if eval_option == "评估所有标准问答对":
@@ -1406,19 +1287,12 @@ elif menu == "LLM评估":
                 # 参数验证
                 can_proceed = True
                 
-                # 验证API密钥
                 if model.startswith("gpt") and not os.getenv("OPENAI_API_KEY"):
                     st.error("❌ 请配置OPENAI_API_KEY环境变量")
                     can_proceed = False
                 elif model.startswith("claude") and not os.getenv("ANTHROPIC_API_KEY"):
                     st.error("❌ 请配置ANTHROPIC_API_KEY环境变量")
                     can_proceed = False
-                
-                # 验证自定义prompt格式
-                if use_custom_prompt:
-                    if "{question}" not in evaluation_prompt or "{answer}" not in evaluation_prompt:
-                        st.error("❌ 自定义Prompt格式错误：必须包含 {question} 和 {answer} 占位符")
-                        can_proceed = False
                 
                 # 确定评估参数
                 if can_proceed:
@@ -1446,10 +1320,9 @@ elif menu == "LLM评估":
                         progress_container = st.container()
                         
                         try:
-                            # 执行评估，传递自定义prompt
+                            # 执行评估
                             result = evaluate_standard_pairs(
                                 model_name=model,
-                                custom_prompt=evaluation_prompt,
                                 **eval_params
                             )
                             

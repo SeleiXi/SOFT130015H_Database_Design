@@ -485,19 +485,24 @@ def get_questions_with_tags(page=1, page_size=10):
 
 def get_llm_evaluation_results(page=1, page_size=10):
     """获取LLM评估结果"""
+    # 使用直接关联ori_ans的查询方式，提供更详细的信息
     query = """
     SELECT 
         le.eval_id,
         lt.name as llm_model,
         lt.params as model_params,
         le.llm_score,
-        sa.ans_content as standard_answer,
+        COALESCE(oa.content, CONCAT('答案ID ', le.std_ans_id, ' (数据缺失)')) as standard_answer,
         le.llm_answer,
-        sq.content as question_content
+        CASE 
+            WHEN oq.content IS NOT NULL THEN oq.content
+            WHEN oa.ori_ans_id IS NOT NULL THEN CONCAT('答案ID ', oa.ori_ans_id, ' 暂无关联问题')
+            ELSE CONCAT('答案ID ', le.std_ans_id, ' (数据缺失)')
+        END as question_content
     FROM llm_evaluation le
     INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
-    INNER JOIN standard_ans sa ON le.std_ans_id = sa.ans_id
-    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    LEFT JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
+    LEFT JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
     ORDER BY le.llm_score DESC
     """
     return get_paginated_query(query, None, page, page_size)
@@ -506,15 +511,15 @@ def get_top_scored_answers(page=1, page_size=10):
     """获取高分答案排行"""
     query = """
     SELECT 
-        sa.ans_id,
-        sa.ans_content,
+        le.std_ans_id as ans_id,
+        COALESCE(oa.content, CONCAT('原始答案ID: ', le.std_ans_id)) as ans_content,
         AVG(le.llm_score) as avg_score,
         COUNT(le.eval_id) as evaluation_count,
-        sq.content as question_content
-    FROM standard_ans sa
-    INNER JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
-    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
-    GROUP BY sa.ans_id, sa.ans_content, sq.content
+        COALESCE(oq.content, '无关联问题') as question_content
+    FROM llm_evaluation le
+    LEFT JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
+    LEFT JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
+    GROUP BY le.std_ans_id, oa.content, oq.content
     HAVING evaluation_count > 0
     ORDER BY avg_score DESC
     """
@@ -577,15 +582,15 @@ def get_answers_by_score_range(min_score, max_score, page=1, page_size=10):
     """根据评分范围获取答案"""
     query = """
     SELECT DISTINCT
-        sa.ans_id,
-        sa.ans_content,
+        le.std_ans_id as ans_id,
+        COALESCE(oa.content, CONCAT('原始答案ID: ', le.std_ans_id)) as ans_content,
         le.llm_score,
-        sq.content as question,
+        COALESCE(oq.content, '无关联问题') as question,
         lt.name as model_name
-    FROM standard_ans sa
-    INNER JOIN llm_evaluation le ON sa.ans_id = le.std_ans_id
+    FROM llm_evaluation le
     INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
-    LEFT JOIN standard_QS sq ON sa.std_qs_id = sq.std_qs_id
+    LEFT JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
+    LEFT JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
     WHERE le.llm_score BETWEEN %s AND %s
     ORDER BY le.llm_score DESC
     """
