@@ -1720,8 +1720,43 @@ elif menu == "答案标注":
                             with answer_col2:
                                 if answer_annotation_status == "未标注":
                                     # 标注该答案按钮
-                                    if st.button(f"🏷️ 标注该答案为标准答案", key=f"annotate_answer_{ori_ans_id}", use_container_width=True):
-                                        # 执行答案标注
+                                    # 首先检查该问题是否已有其他答案被标注为标准答案
+                                    check_existing_query = """
+                                    SELECT sa.ans_id, sa.ori_ans_id, oa2.content
+                                    FROM standard_ans sa
+                                    JOIN ori_ans oa ON sa.ori_ans_id = oa.ori_ans_id
+                                    JOIN ori_ans oa2 ON sa.ori_ans_id = oa2.ori_ans_id
+                                    WHERE oa.ori_qs_id = %s AND sa.status != 'archived'
+                                    """
+                                    
+                                    success_check, existing_standards = execute_query(check_existing_query, [ori_qs_id], True)
+                                    
+                                    has_existing_standard = success_check and existing_standards
+                                    
+                                    if has_existing_standard:
+                                        existing_count = len(existing_standards)
+                                        existing_preview = existing_standards[0][2][:50] + "..." if len(existing_standards[0][2]) > 50 else existing_standards[0][2]
+                                        st.warning(f"⚠️ 该问题已有 {existing_count} 个标准答案: {existing_preview}")
+                                        st.caption("标注新答案将替换原有的标准答案")
+                                    
+                                    button_text = f"🔄 替换为标准答案" if has_existing_standard else f"🏷️ 标注为标准答案"
+                                    
+                                    if st.button(button_text, key=f"annotate_answer_{ori_ans_id}", use_container_width=True):
+                                        if has_existing_standard:
+                                            # 如果已有标准答案，先删除它们
+                                            delete_query = """
+                                            DELETE sa FROM standard_ans sa
+                                            JOIN ori_ans oa ON sa.ori_ans_id = oa.ori_ans_id
+                                            WHERE oa.ori_qs_id = %s AND sa.status != 'archived'
+                                            """
+                                            
+                                            success_delete, result_delete = execute_query(delete_query, [ori_qs_id])
+                                            
+                                            if not success_delete:
+                                                st.error(f"❌ 删除原有标准答案失败: {result_delete}")
+                                                st.stop()
+                                        
+                                        # 执行新的答案标注
                                         insert_answer_query = """
                                         INSERT INTO standard_ans (ori_ans_id, ans_content, created_by, updated_content_version, status)
                                         VALUES (%s, %s, %s, 1, 'draft')
@@ -1732,7 +1767,10 @@ elif menu == "答案标注":
                                         success_ans, result_ans = execute_query(insert_answer_query, insert_answer_params)
                                         
                                         if success_ans:
-                                            st.success(f"✅ 答案 #{ori_ans_id} 已成功标注为标准答案！")
+                                            if has_existing_standard:
+                                                st.success(f"✅ 答案 #{ori_ans_id} 已成功标注为标准答案！原有标准答案已被替换")
+                                            else:
+                                                st.success(f"✅ 答案 #{ori_ans_id} 已成功标注为标准答案！")
                                             st.rerun()
                                         else:
                                             st.error(f"❌ 答案标注失败: {result_ans}")
