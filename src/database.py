@@ -171,7 +171,7 @@ def create_tables():
             llm_answer TEXT NOT NULL,
             llm_type_id INT NOT NULL,
             std_ans_id INT NOT NULL,
-            llm_score DECIMAL(5,2) NOT NULL CHECK (llm_score >= 0 AND llm_score <= 5),
+            llm_score DECIMAL(5,2) NOT NULL CHECK (llm_score >= 0 AND llm_score <= 100),
             evaluated_by INT DEFAULT NULL,
             evaluation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             notes TEXT DEFAULT NULL,

@@ -363,406 +363,306 @@
       "name": "Sustainability"
     }
   ],
-  "ori_ans": [
+  "original_ans": [
     {
-      "content": "The solution to topic 1 typically involves scalability methodology and flexibility tools.",
-      "ori_qs_id": 1
+      "content": "The solution to topic 1 typically involves scalability methodology and flexibility tools."
     },
     {
-      "content": "To implement topic 2, you need to consider factors such as accessibility, collaboration, and automation.",
-      "ori_qs_id": 2
+      "content": "To implement topic 2, you need to consider factors such as accessibility, collaboration, and automation."
     },
     {
-      "content": "The main benefits of topic 3 are improved flexibility, enhanced optimization, and better security.",
-      "ori_qs_id": 3
+      "content": "The main benefits of topic 3 are improved flexibility, enhanced optimization, and better security."
     },
     {
-      "content": "Current trends in topic 4 indicate growing importance of automation and transparency.",
-      "ori_qs_id": 4
+      "content": "Current trends in topic 4 indicate growing importance of automation and transparency."
     },
     {
-      "content": "The historical development of topic 5 shows progression from optimization to modern efficiency.",
-      "ori_qs_id": 5
+      "content": "The historical development of topic 5 shows progression from optimization to modern efficiency."
     },
     {
-      "content": "From a technical perspective, topic 6 works by utilizing reliability principles.",
-      "ori_qs_id": 6
+      "content": "From a technical perspective, topic 6 works by utilizing reliability principles."
     },
     {
-      "content": "The solution to topic 7 typically involves sustainability methodology and optimization tools.",
-      "ori_qs_id": 7
+      "content": "The solution to topic 7 typically involves sustainability methodology and optimization tools."
     },
     {
-      "content": "The key points to understand about topic 8 are: 1) performance, 2) optimization, 3) performance.",
-      "ori_qs_id": 8
+      "content": "The key points to understand about topic 8 are: 1) performance, 2) optimization, 3) performance."
     },
     {
-      "content": "From a technical perspective, topic 9 works by utilizing automation principles.",
-      "ori_qs_id": 9
+      "content": "From a technical perspective, topic 9 works by utilizing automation principles."
     },
     {
-      "content": "The solution to topic 10 typically involves cost-effectiveness methodology and collaboration tools.",
-      "ori_qs_id": 10
+      "content": "The solution to topic 10 typically involves cost-effectiveness methodology and collaboration tools."
     },
     {
-      "content": "This is a comprehensive answer about topic 11. It involves multiple aspects including performance.",
-      "ori_qs_id": 11
+      "content": "This is a comprehensive answer about topic 11. It involves multiple aspects including performance."
     },
     {
-      "content": "This is a comprehensive answer about topic 12. It involves multiple aspects including automation.",
-      "ori_qs_id": 12
+      "content": "This is a comprehensive answer about topic 12. It involves multiple aspects including automation."
     },
     {
-      "content": "To implement topic 13, you need to consider factors such as user experience, innovation, and transparency.",
-      "ori_qs_id": 13
+      "content": "To implement topic 13, you need to consider factors such as user experience, innovation, and transparency."
     },
     {
-      "content": "The historical development of topic 14 shows progression from optimization to modern transparency.",
-      "ori_qs_id": 14
+      "content": "The historical development of topic 14 shows progression from optimization to modern transparency."
     },
     {
-      "content": "Current trends in topic 15 indicate growing importance of reliability and performance.",
-      "ori_qs_id": 15
+      "content": "Current trends in topic 15 indicate growing importance of reliability and performance."
     },
     {
-      "content": "The historical development of topic 16 shows progression from collaboration to modern cost-effectiveness.",
-      "ori_qs_id": 16
+      "content": "The historical development of topic 16 shows progression from collaboration to modern cost-effectiveness."
     },
     {
-      "content": "From a technical perspective, topic 17 works by utilizing sustainability principles.",
-      "ori_qs_id": 17
+      "content": "From a technical perspective, topic 17 works by utilizing sustainability principles."
     },
     {
-      "content": "This is a comprehensive answer about topic 18. It involves multiple aspects including transparency.",
-      "ori_qs_id": 18
+      "content": "This is a comprehensive answer about topic 18. It involves multiple aspects including transparency."
     },
     {
-      "content": "The key points to understand about topic 19 are: 1) reliability, 2) optimization, 3) security.",
-      "ori_qs_id": 19
+      "content": "The key points to understand about topic 19 are: 1) reliability, 2) optimization, 3) security."
     },
     {
-      "content": "This is a comprehensive answer about topic 20. It involves multiple aspects including user experience.",
-      "ori_qs_id": 20
+      "content": "This is a comprehensive answer about topic 20. It involves multiple aspects including user experience."
     },
     {
-      "content": "Based on current research, topic 21 can be explained through the following mechanisms: innovation.",
-      "ori_qs_id": 21
+      "content": "Based on current research, topic 21 can be explained through the following mechanisms: innovation."
     },
     {
-      "content": "The main benefits of topic 22 are improved accessibility, enhanced security, and better optimization.",
-      "ori_qs_id": 22
+      "content": "The main benefits of topic 22 are improved accessibility, enhanced security, and better optimization."
     },
     {
-      "content": "Based on current research, topic 23 can be explained through the following mechanisms: reliability.",
-      "ori_qs_id": 23
+      "content": "Based on current research, topic 23 can be explained through the following mechanisms: reliability."
     },
     {
-      "content": "Based on current research, topic 24 can be explained through the following mechanisms: integration.",
-      "ori_qs_id": 24
+      "content": "Based on current research, topic 24 can be explained through the following mechanisms: integration."
     },
     {
-      "content": "Current trends in topic 25 indicate growing importance of flexibility and optimization.",
-      "ori_qs_id": 25
+      "content": "Current trends in topic 25 indicate growing importance of flexibility and optimization."
     },
     {
-      "content": "To implement topic 26, you need to consider factors such as user experience, transparency, and security.",
-      "ori_qs_id": 26
+      "content": "To implement topic 26, you need to consider factors such as user experience, transparency, and security."
     },
     {
-      "content": "Current trends in topic 27 indicate growing importance of collaboration and collaboration.",
-      "ori_qs_id": 27
+      "content": "Current trends in topic 27 indicate growing importance of collaboration and collaboration."
     },
     {
-      "content": "Based on current research, topic 28 can be explained through the following mechanisms: sustainability.",
-      "ori_qs_id": 28
+      "content": "Based on current research, topic 28 can be explained through the following mechanisms: sustainability."
     },
     {
-      "content": "The historical development of topic 29 shows progression from cost-effectiveness to modern efficiency.",
-      "ori_qs_id": 29
+      "content": "The historical development of topic 29 shows progression from cost-effectiveness to modern efficiency."
     },
     {
-      "content": "The historical development of topic 30 shows progression from scalability to modern accessibility.",
-      "ori_qs_id": 30
+      "content": "The historical development of topic 30 shows progression from scalability to modern accessibility."
     },
     {
-      "content": "The key points to understand about topic 31 are: 1) scalability, 2) innovation, 3) accessibility.",
-      "ori_qs_id": 31
+      "content": "The key points to understand about topic 31 are: 1) scalability, 2) innovation, 3) accessibility."
     },
     {
-      "content": "The practical applications of topic 32 include performance and automation among others.",
-      "ori_qs_id": 32
+      "content": "The practical applications of topic 32 include performance and automation among others."
     },
     {
-      "content": "Based on current research, topic 33 can be explained through the following mechanisms: automation.",
-      "ori_qs_id": 33
+      "content": "Based on current research, topic 33 can be explained through the following mechanisms: automation."
     },
     {
-      "content": "Current trends in topic 34 indicate growing importance of flexibility and efficiency.",
-      "ori_qs_id": 34
+      "content": "Current trends in topic 34 indicate growing importance of flexibility and efficiency."
     },
     {
-      "content": "To implement topic 35, you need to consider factors such as user experience, collaboration, and sustainability.",
-      "ori_qs_id": 35
+      "content": "To implement topic 35, you need to consider factors such as user experience, collaboration, and sustainability."
     },
     {
-      "content": "The key points to understand about topic 36 are: 1) flexibility, 2) security, 3) flexibility.",
-      "ori_qs_id": 36
+      "content": "The key points to understand about topic 36 are: 1) flexibility, 2) security, 3) flexibility."
     },
     {
-      "content": "The key points to understand about topic 37 are: 1) cost-effectiveness, 2) scalability, 3) innovation.",
-      "ori_qs_id": 37
+      "content": "The key points to understand about topic 37 are: 1) cost-effectiveness, 2) scalability, 3) innovation."
     },
     {
-      "content": "To implement topic 38, you need to consider factors such as cost-effectiveness, user experience, and user experience.",
-      "ori_qs_id": 38
+      "content": "To implement topic 38, you need to consider factors such as cost-effectiveness, user experience, and user experience."
     },
     {
-      "content": "From a technical perspective, topic 39 works by utilizing collaboration principles.",
-      "ori_qs_id": 39
+      "content": "From a technical perspective, topic 39 works by utilizing collaboration principles."
     },
     {
-      "content": "From a technical perspective, topic 40 works by utilizing transparency principles.",
-      "ori_qs_id": 40
+      "content": "From a technical perspective, topic 40 works by utilizing transparency principles."
     },
     {
-      "content": "This is a comprehensive answer about topic 41. It involves multiple aspects including cost-effectiveness.",
-      "ori_qs_id": 41
+      "content": "This is a comprehensive answer about topic 41. It involves multiple aspects including cost-effectiveness."
     },
     {
-      "content": "The key points to understand about topic 42 are: 1) sustainability, 2) integration, 3) user experience.",
-      "ori_qs_id": 42
+      "content": "The key points to understand about topic 42 are: 1) sustainability, 2) integration, 3) user experience."
     },
     {
-      "content": "The main benefits of topic 43 are improved efficiency, enhanced efficiency, and better flexibility.",
-      "ori_qs_id": 43
+      "content": "The main benefits of topic 43 are improved efficiency, enhanced efficiency, and better flexibility."
     },
     {
-      "content": "This is a comprehensive answer about topic 44. It involves multiple aspects including integration.",
-      "ori_qs_id": 44
+      "content": "This is a comprehensive answer about topic 44. It involves multiple aspects including integration."
     },
     {
-      "content": "Current trends in topic 45 indicate growing importance of scalability and flexibility.",
-      "ori_qs_id": 45
+      "content": "Current trends in topic 45 indicate growing importance of scalability and flexibility."
     },
     {
-      "content": "The solution to topic 46 typically involves automation methodology and innovation tools.",
-      "ori_qs_id": 46
+      "content": "The solution to topic 46 typically involves automation methodology and innovation tools."
     },
     {
-      "content": "The key points to understand about topic 47 are: 1) scalability, 2) collaboration, 3) efficiency.",
-      "ori_qs_id": 47
+      "content": "The key points to understand about topic 47 are: 1) scalability, 2) collaboration, 3) efficiency."
     },
     {
-      "content": "The historical development of topic 48 shows progression from innovation to modern reliability.",
-      "ori_qs_id": 48
+      "content": "The historical development of topic 48 shows progression from innovation to modern reliability."
     },
     {
-      "content": "The historical development of topic 49 shows progression from accessibility to modern sustainability.",
-      "ori_qs_id": 49
+      "content": "The historical development of topic 49 shows progression from accessibility to modern sustainability."
     },
     {
-      "content": "The historical development of topic 50 shows progression from transparency to modern integration.",
-      "ori_qs_id": 50
+      "content": "The historical development of topic 50 shows progression from transparency to modern integration."
     },
     {
-      "content": "To implement topic 51, you need to consider factors such as efficiency, user experience, and innovation.",
-      "ori_qs_id": 51
+      "content": "To implement topic 51, you need to consider factors such as efficiency, user experience, and innovation."
     },
     {
-      "content": "Current trends in topic 52 indicate growing importance of reliability and performance.",
-      "ori_qs_id": 52
+      "content": "Current trends in topic 52 indicate growing importance of reliability and performance."
     },
     {
-      "content": "The main benefits of topic 53 are improved sustainability, enhanced efficiency, and better integration.",
-      "ori_qs_id": 53
+      "content": "The main benefits of topic 53 are improved sustainability, enhanced efficiency, and better integration."
     },
     {
-      "content": "The main benefits of topic 54 are improved transparency, enhanced innovation, and better security.",
-      "ori_qs_id": 54
+      "content": "The main benefits of topic 54 are improved transparency, enhanced innovation, and better security."
     },
     {
-      "content": "To implement topic 55, you need to consider factors such as transparency, sustainability, and security.",
-      "ori_qs_id": 55
+      "content": "To implement topic 55, you need to consider factors such as transparency, sustainability, and security."
     },
     {
-      "content": "This is a comprehensive answer about topic 56. It involves multiple aspects including collaboration.",
-      "ori_qs_id": 56
+      "content": "This is a comprehensive answer about topic 56. It involves multiple aspects including collaboration."
     },
     {
-      "content": "The solution to topic 57 typically involves integration methodology and automation tools.",
-      "ori_qs_id": 57
+      "content": "The solution to topic 57 typically involves integration methodology and automation tools."
     },
     {
-      "content": "The main benefits of topic 58 are improved performance, enhanced sustainability, and better accessibility.",
-      "ori_qs_id": 58
+      "content": "The main benefits of topic 58 are improved performance, enhanced sustainability, and better accessibility."
     },
     {
-      "content": "This is a comprehensive answer about topic 59. It involves multiple aspects including collaboration.",
-      "ori_qs_id": 59
+      "content": "This is a comprehensive answer about topic 59. It involves multiple aspects including collaboration."
     },
     {
-      "content": "The historical development of topic 60 shows progression from integration to modern flexibility.",
-      "ori_qs_id": 60
+      "content": "The historical development of topic 60 shows progression from integration to modern flexibility."
     },
     {
-      "content": "The solution to topic 61 typically involves flexibility methodology and transparency tools.",
-      "ori_qs_id": 61
+      "content": "The solution to topic 61 typically involves flexibility methodology and transparency tools."
     },
     {
-      "content": "The historical development of topic 62 shows progression from user experience to modern user experience.",
-      "ori_qs_id": 62
+      "content": "The historical development of topic 62 shows progression from user experience to modern user experience."
     },
     {
-      "content": "The solution to topic 63 typically involves flexibility methodology and accessibility tools.",
-      "ori_qs_id": 63
+      "content": "The solution to topic 63 typically involves flexibility methodology and accessibility tools."
     },
     {
-      "content": "The historical development of topic 64 shows progression from security to modern cost-effectiveness.",
-      "ori_qs_id": 64
+      "content": "The historical development of topic 64 shows progression from security to modern cost-effectiveness."
     },
     {
-      "content": "The practical applications of topic 65 include cost-effectiveness and scalability among others.",
-      "ori_qs_id": 65
+      "content": "The practical applications of topic 65 include cost-effectiveness and scalability among others."
     },
     {
-      "content": "From a technical perspective, topic 66 works by utilizing accessibility principles.",
-      "ori_qs_id": 66
+      "content": "From a technical perspective, topic 66 works by utilizing accessibility principles."
     },
     {
-      "content": "Current trends in topic 67 indicate growing importance of collaboration and collaboration.",
-      "ori_qs_id": 67
+      "content": "Current trends in topic 67 indicate growing importance of collaboration and collaboration."
     },
     {
-      "content": "Based on current research, topic 68 can be explained through the following mechanisms: flexibility.",
-      "ori_qs_id": 68
+      "content": "Based on current research, topic 68 can be explained through the following mechanisms: flexibility."
     },
     {
-      "content": "The main benefits of topic 69 are improved cost-effectiveness, enhanced integration, and better security.",
-      "ori_qs_id": 69
+      "content": "The main benefits of topic 69 are improved cost-effectiveness, enhanced integration, and better security."
     },
     {
-      "content": "Current trends in topic 70 indicate growing importance of user experience and cost-effectiveness.",
-      "ori_qs_id": 70
+      "content": "Current trends in topic 70 indicate growing importance of user experience and cost-effectiveness."
     },
     {
-      "content": "The practical applications of topic 71 include flexibility and automation among others.",
-      "ori_qs_id": 71
+      "content": "The practical applications of topic 71 include flexibility and automation among others."
     },
     {
-      "content": "This is a comprehensive answer about topic 72. It involves multiple aspects including collaboration.",
-      "ori_qs_id": 72
+      "content": "This is a comprehensive answer about topic 72. It involves multiple aspects including collaboration."
     },
     {
-      "content": "This is a comprehensive answer about topic 73. It involves multiple aspects including security.",
-      "ori_qs_id": 73
+      "content": "This is a comprehensive answer about topic 73. It involves multiple aspects including security."
     },
     {
-      "content": "The historical development of topic 74 shows progression from performance to modern security.",
-      "ori_qs_id": 74
+      "content": "The historical development of topic 74 shows progression from performance to modern security."
     },
     {
-      "content": "The solution to topic 75 typically involves optimization methodology and scalability tools.",
-      "ori_qs_id": 75
+      "content": "The solution to topic 75 typically involves optimization methodology and scalability tools."
     },
     {
-      "content": "The key points to understand about topic 76 are: 1) reliability, 2) efficiency, 3) innovation.",
-      "ori_qs_id": 76
+      "content": "The key points to understand about topic 76 are: 1) reliability, 2) efficiency, 3) innovation."
     },
     {
-      "content": "Based on current research, topic 77 can be explained through the following mechanisms: innovation.",
-      "ori_qs_id": 77
+      "content": "Based on current research, topic 77 can be explained through the following mechanisms: innovation."
     },
     {
-      "content": "The practical applications of topic 78 include optimization and automation among others.",
-      "ori_qs_id": 78
+      "content": "The practical applications of topic 78 include optimization and automation among others."
     },
     {
-      "content": "The key points to understand about topic 79 are: 1) cost-effectiveness, 2) reliability, 3) innovation.",
-      "ori_qs_id": 79
+      "content": "The key points to understand about topic 79 are: 1) cost-effectiveness, 2) reliability, 3) innovation."
     },
     {
-      "content": "This is a comprehensive answer about topic 80. It involves multiple aspects including reliability.",
-      "ori_qs_id": 80
+      "content": "This is a comprehensive answer about topic 80. It involves multiple aspects including reliability."
     },
     {
-      "content": "The main benefits of topic 81 are improved sustainability, enhanced security, and better transparency.",
-      "ori_qs_id": 81
+      "content": "The main benefits of topic 81 are improved sustainability, enhanced security, and better transparency."
     },
     {
-      "content": "The key points to understand about topic 82 are: 1) integration, 2) optimization, 3) user experience.",
-      "ori_qs_id": 82
+      "content": "The key points to understand about topic 82 are: 1) integration, 2) optimization, 3) user experience."
     },
     {
-      "content": "This is a comprehensive answer about topic 83. It involves multiple aspects including efficiency.",
-      "ori_qs_id": 83
+      "content": "This is a comprehensive answer about topic 83. It involves multiple aspects including efficiency."
     },
     {
-      "content": "Current trends in topic 84 indicate growing importance of performance and flexibility.",
-      "ori_qs_id": 84
+      "content": "Current trends in topic 84 indicate growing importance of performance and flexibility."
     },
     {
-      "content": "The historical development of topic 85 shows progression from efficiency to modern sustainability.",
-      "ori_qs_id": 85
+      "content": "The historical development of topic 85 shows progression from efficiency to modern sustainability."
     },
     {
-      "content": "Current trends in topic 86 indicate growing importance of scalability and accessibility.",
-      "ori_qs_id": 86
+      "content": "Current trends in topic 86 indicate growing importance of scalability and accessibility."
     },
     {
-      "content": "Based on current research, topic 87 can be explained through the following mechanisms: innovation.",
-      "ori_qs_id": 87
+      "content": "Based on current research, topic 87 can be explained through the following mechanisms: innovation."
     },
     {
-      "content": "The practical applications of topic 88 include security and collaboration among others.",
-      "ori_qs_id": 88
+      "content": "The practical applications of topic 88 include security and collaboration among others."
     },
     {
-      "content": "Based on current research, topic 89 can be explained through the following mechanisms: security.",
-      "ori_qs_id": 89
+      "content": "Based on current research, topic 89 can be explained through the following mechanisms: security."
     },
     {
-      "content": "The practical applications of topic 90 include integration and performance among others.",
-      "ori_qs_id": 90
+      "content": "The practical applications of topic 90 include integration and performance among others."
     },
     {
-      "content": "The solution to topic 91 typically involves performance methodology and transparency tools.",
-      "ori_qs_id": 91
+      "content": "The solution to topic 91 typically involves performance methodology and transparency tools."
     },
     {
-      "content": "The practical applications of topic 92 include automation and performance among others.",
-      "ori_qs_id": 92
+      "content": "The practical applications of topic 92 include automation and performance among others."
     },
     {
-      "content": "The historical development of topic 93 shows progression from integration to modern innovation.",
-      "ori_qs_id": 93
+      "content": "The historical development of topic 93 shows progression from integration to modern innovation."
     },
     {
-      "content": "The key points to understand about topic 94 are: 1) performance, 2) reliability, 3) optimization.",
-      "ori_qs_id": 94
+      "content": "The key points to understand about topic 94 are: 1) performance, 2) reliability, 3) optimization."
     },
     {
-      "content": "The key points to understand about topic 95 are: 1) automation, 2) security, 3) cost-effectiveness.",
-      "ori_qs_id": 95
+      "content": "The key points to understand about topic 95 are: 1) automation, 2) security, 3) cost-effectiveness."
     },
     {
-      "content": "From a technical perspective, topic 96 works by utilizing optimization principles.",
-      "ori_qs_id": 96
+      "content": "From a technical perspective, topic 96 works by utilizing optimization principles."
     },
     {
-      "content": "This is a comprehensive answer about topic 97. It involves multiple aspects including integration.",
-      "ori_qs_id": 97
+      "content": "This is a comprehensive answer about topic 97. It involves multiple aspects including integration."
     },
     {
-      "content": "From a technical perspective, topic 98 works by utilizing security principles.",
-      "ori_qs_id": 98
+      "content": "From a technical perspective, topic 98 works by utilizing security principles."
     },
     {
-      "content": "The historical development of topic 99 shows progression from optimization to modern scalability.",
-      "ori_qs_id": 99
+      "content": "The historical development of topic 99 shows progression from optimization to modern scalability."
     },
     {
-      "content": "From a technical perspective, topic 100 works by utilizing automation principles.",
-      "ori_qs_id": 100
+      "content": "From a technical perspective, topic 100 works by utilizing automation principles."
     }
   ],
   "llm_type": [
@@ -2653,395 +2553,709 @@
   "llm_evaluation": [
     {
       "eval_id": 1,
-      "llm_answer": "{\"accuracy\": 78, \"completeness\": 85, \"clarity\": 80, \"professionalism\": 82, \"relevance\": 88, \"total_score\": 82.6, \"reasoning\": \"答案内容准确，信息完整，逻辑清晰，专业性良好，与问题高度相关。\"}",
+      "llm_answer": {
+        "accuracy": 78,
+        "completeness": 85,
+        "clarity": 80,
+        "professionalism": 82,
+        "relevance": 88,
+        "total_score": 82.6,
+        "reasoning": "答案内容准确，信息完整，逻辑清晰，专业性良好，与问题高度相关。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 42,
-      "llm_score": 82.6,
+      "llm_score": 82.60,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 10:00:00",
       "notes": "这是一次初步评估，表现符合预期。"
     },
     {
       "eval_id": 2,
-      "llm_answer": "{\"accuracy\": 92, \"completeness\": 95, \"clarity\": 90, \"professionalism\": 93, \"relevance\": 94, \"total_score\": 92.8, \"reasoning\": \"非常优秀的答案，在所有评估维度上都表现出色，提供了全面且专业的解答。\"}",
+      "llm_answer": {
+        "accuracy": 92,
+        "completeness": 95,
+        "clarity": 90,
+        "professionalism": 93,
+        "relevance": 94,
+        "total_score": 92.8,
+        "reasoning": "非常优秀的答案，在所有评估维度上都表现出色，提供了全面且专业的解答。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 7,
-      "llm_score": 92.8,
+      "llm_score": 92.80,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 10:15:00",
       "notes": "模型在该问题上表现卓越。"
     },
     {
       "eval_id": 3,
-      "llm_answer": "{\"accuracy\": 65, \"completeness\": 70, \"clarity\": 68, \"professionalism\": 60, \"relevance\": 72, \"total_score\": 67.0, \"reasoning\": \"答案部分准确，但信息不够完整，表达略显模糊，专业性有待提高。\"}",
+      "llm_answer": {
+        "accuracy": 65,
+        "completeness": 70,
+        "clarity": 68,
+        "professionalism": 60,
+        "relevance": 72,
+        "total_score": 67.0,
+        "reasoning": "答案部分准确，但信息不够完整，表达略显模糊，专业性有待提高。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 91,
-      "llm_score": 67.0,
+      "llm_score": 67.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 10:30:00",
       "notes": "需要进一步优化答案的完整性和清晰度。"
     },
     {
       "eval_id": 4,
-      "llm_answer": "{\"accuracy\": 88, \"completeness\": 87, \"clarity\": 89, \"professionalism\": 90, \"relevance\": 85, \"total_score\": 87.8, \"reasoning\": \"答案准确，结构完整，清晰易懂，专业性强，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 88,
+        "completeness": 87,
+        "clarity": 89,
+        "professionalism": 90,
+        "relevance": 85,
+        "total_score": 87.8,
+        "reasoning": "答案准确，结构完整，清晰易懂，专业性强，相关性良好。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 15,
-      "llm_score": 87.8,
+      "llm_score": 87.80,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 10:45:00",
       "notes": "表现稳定。"
     },
     {
       "eval_id": 5,
-      "llm_answer": "{\"accuracy\": 72, \"completeness\": 75, \"clarity\": 70, \"professionalism\": 68, \"relevance\": 70, \"total_score\": 71.0, \"reasoning\": \"答案基本准确，但深度不足，部分表述不够精确，专业词汇使用有待加强。\"}",
+      "llm_answer": {
+        "accuracy": 72,
+        "completeness": 75,
+        "clarity": 70,
+        "professionalism": 68,
+        "relevance": 70,
+        "total_score": 71.0,
+        "reasoning": "答案基本准确，但深度不足，部分表述不够精确，专业词汇使用有待加强。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 56,
-      "llm_score": 71.0,
+      "llm_score": 71.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 11:00:00",
       "notes": "仍有提升空间。"
     },
     {
       "eval_id": 6,
-      "llm_answer": "{\"accuracy\": 95, \"completeness\": 96, \"clarity\": 94, \"professionalism\": 97, \"relevance\": 95, \"total_score\": 95.4, \"reasoning\": \"近乎完美的答案，在各个方面都展示了高水平的理解和表达能力。\"}",
+      "llm_answer": {
+        "accuracy": 95,
+        "completeness": 96,
+        "clarity": 94,
+        "professionalism": 97,
+        "relevance": 95,
+        "total_score": 95.4,
+        "reasoning": "近乎完美的答案，在各个方面都展示了高水平的理解和表达能力。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 3,
-      "llm_score": 95.4,
+      "llm_score": 95.40,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 11:15:00",
       "notes": "非常出色！"
     },
     {
       "eval_id": 7,
-      "llm_answer": "{\"accuracy\": 50, \"completeness\": 55, \"clarity\": 48, \"professionalism\": 45, \"relevance\": 52, \"total_score\": 50.0, \"reasoning\": \"答案存在较多错误和遗漏，表述混乱，专业性不足，与问题相关性较低。\"}",
+      "llm_answer": {
+        "accuracy": 50,
+        "completeness": 55,
+        "clarity": 48,
+        "professionalism": 45,
+        "relevance": 52,
+        "total_score": 50.0,
+        "reasoning": "答案存在较多错误和遗漏，表述混乱，专业性不足，与问题相关性较低。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 88,
-      "llm_score": 50.0,
+      "llm_score": 50.00,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 11:30:00",
       "notes": "需要大幅改进。"
     },
     {
       "eval_id": 8,
-      "llm_answer": "{\"accuracy\": 80, \"completeness\": 79, \"clarity\": 81, \"professionalism\": 78, \"relevance\": 82, \"total_score\": 80.0, \"reasoning\": \"答案内容准确，信息较为完整，表达清晰，专业性尚可，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 80,
+        "completeness": 79,
+        "clarity": 81,
+        "professionalism": 78,
+        "relevance": 82,
+        "total_score": 80.0,
+        "reasoning": "答案内容准确，信息较为完整，表达清晰，专业性尚可，相关性良好。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 29,
-      "llm_score": 80.0,
+      "llm_score": 80.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 11:45:00",
       "notes": "中规中矩。"
     },
     {
       "eval_id": 9,
-      "llm_answer": "{\"accuracy\": 60, \"completeness\": 65, \"clarity\": 62, \"professionalism\": 58, \"relevance\": 63, \"total_score\": 61.6, \"reasoning\": \"答案存在一定不足，信息不完整，表述模糊，专业性较低，相关性一般。\"}",
+      "llm_answer": {
+        "accuracy": 60,
+        "completeness": 65,
+        "clarity": 62,
+        "professionalism": 58,
+        "relevance": 63,
+        "total_score": 61.6,
+        "reasoning": "答案存在一定不足，信息不完整，表述模糊，专业性较低，相关性一般。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 73,
-      "llm_score": 61.6,
+      "llm_score": 61.60,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 12:00:00",
       "notes": "有待提高。"
     },
     {
       "eval_id": 10,
-      "llm_answer": "{\"accuracy\": 85, \"completeness\": 88, \"clarity\": 86, \"professionalism\": 89, \"relevance\": 87, \"total_score\": 87.0, \"reasoning\": \"答案准确且详细，逻辑严谨，专业性高，与问题完美契合。\"}",
+      "llm_answer": {
+        "accuracy": 85,
+        "completeness": 88,
+        "clarity": 86,
+        "professionalism": 89,
+        "relevance": 87,
+        "total_score": 87.0,
+        "reasoning": "答案准确且详细，逻辑严谨，专业性高，与问题完美契合。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 4,
-      "llm_score": 87.0,
+      "llm_score": 87.00,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 12:15:00",
       "notes": "高质量答案。"
     },
     {
       "eval_id": 11,
-      "llm_answer": "{\"accuracy\": 70, \"completeness\": 73, \"clarity\": 71, \"professionalism\": 69, \"relevance\": 74, \"total_score\": 71.4, \"reasoning\": \"答案大致正确，但部分细节可以更完善，清晰度中等，专业性一般，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 70,
+        "completeness": 73,
+        "clarity": 71,
+        "professionalism": 69,
+        "relevance": 74,
+        "total_score": 71.4,
+        "reasoning": "答案大致正确，但部分细节可以更完善，清晰度中等，专业性一般，相关性良好。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 99,
-      "llm_score": 71.4,
+      "llm_score": 71.40,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 12:30:00",
       "notes": "尚可。"
     },
     {
       "eval_id": 12,
-      "llm_answer": "{\"accuracy\": 90, \"completeness\": 92, \"clarity\": 91, \"professionalism\": 93, \"relevance\": 90, \"total_score\": 91.2, \"reasoning\": \"答案非常准确，内容全面，表达清晰且专业，与问题高度相关。\"}",
+      "llm_answer": {
+        "accuracy": 90,
+        "completeness": 92,
+        "clarity": 91,
+        "professionalism": 93,
+        "relevance": 90,
+        "total_score": 91.2,
+        "reasoning": "答案非常准确，内容全面，表达清晰且专业，与问题高度相关。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 21,
-      "llm_score": 91.2,
+      "llm_score": 91.20,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 12:45:00",
       "notes": "非常满意。"
     },
     {
       "eval_id": 13,
-      "llm_answer": "{\"accuracy\": 55, \"completeness\": 50, \"clarity\": 52, \"professionalism\": 48, \"relevance\": 53, \"total_score\": 51.6, \"reasoning\": \"答案错误较多，信息不全，表述混乱，专业性差，相关性低。\"}",
+      "llm_answer": {
+        "accuracy": 55,
+        "completeness": 50,
+        "clarity": 52,
+        "professionalism": 48,
+        "relevance": 53,
+        "total_score": 51.6,
+        "reasoning": "答案错误较多，信息不全，表述混乱，专业性差，相关性低。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 36,
-      "llm_score": 51.6,
+      "llm_score": 51.60,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 13:00:00",
       "notes": "急需改进。"
     },
     {
       "eval_id": 14,
-      "llm_answer": "{\"accuracy\": 75, \"completeness\": 78, \"clarity\": 76, \"professionalism\": 74, \"relevance\": 77, \"total_score\": 76.0, \"reasoning\": \"答案准确，内容较完整，清晰度良好，专业性一般，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 75,
+        "completeness": 78,
+        "clarity": 76,
+        "professionalism": 74,
+        "relevance": 77,
+        "total_score": 76.0,
+        "reasoning": "答案准确，内容较完整，清晰度良好，专业性一般，相关性高。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 68,
-      "llm_score": 76.0,
+      "llm_score": 76.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 13:15:00",
       "notes": "符合预期。"
     },
     {
       "eval_id": 15,
-      "llm_answer": "{\"accuracy\": 83, \"completeness\": 86, \"clarity\": 84, \"professionalism\": 85, \"relevance\": 87, \"total_score\": 85.0, \"reasoning\": \"答案准确，内容全面，表达清晰，专业性好，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 83,
+        "completeness": 86,
+        "clarity": 84,
+        "professionalism": 85,
+        "relevance": 87,
+        "total_score": 85.0,
+        "reasoning": "答案准确，内容全面，表达清晰，专业性好，相关性高。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 8,
-      "llm_score": 85.0,
+      "llm_score": 85.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 13:30:00",
       "notes": "表现良好。"
     },
     {
       "eval_id": 16,
-      "llm_answer": "{\"accuracy\": 68, \"completeness\": 70, \"clarity\": 67, \"professionalism\": 65, \"relevance\": 69, \"total_score\": 67.8, \"reasoning\": \"答案准确性一般，内容有待补充，清晰度中等，专业性欠缺，相关性一般。\"}",
+      "llm_answer": {
+        "accuracy": 68,
+        "completeness": 70,
+        "clarity": 67,
+        "professionalism": 65,
+        "relevance": 69,
+        "total_score": 67.8,
+        "reasoning": "答案准确性一般，内容有待补充，清晰度中等，专业性欠缺，相关性一般。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 51,
-      "llm_score": 67.8,
+      "llm_score": 67.80,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 13:45:00",
       "notes": "仍需努力。"
     },
     {
       "eval_id": 17,
-      "llm_answer": "{\"accuracy\": 89, \"completeness\": 90, \"clarity\": 88, \"professionalism\": 91, \"relevance\": 89, \"total_score\": 89.4, \"reasoning\": \"答案精准，信息完整，表达流畅，专业度高，相关性强。\"}",
+      "llm_answer": {
+        "accuracy": 89,
+        "completeness": 90,
+        "clarity": 88,
+        "professionalism": 91,
+        "relevance": 89,
+        "total_score": 89.4,
+        "reasoning": "答案精准，信息完整，表达流畅，专业度高，相关性强。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 10,
-      "llm_score": 89.4,
+      "llm_score": 89.40,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 14:00:00",
       "notes": "非常可靠。"
     },
     {
       "eval_id": 18,
-      "llm_answer": "{\"accuracy\": 77, \"completeness\": 79, \"clarity\": 75, \"professionalism\": 76, \"relevance\": 78, \"total_score\": 77.0, \"reasoning\": \"答案准确性良好，信息量足够，清晰度尚可，专业性一般，相关性好。\"}",
+      "llm_answer": {
+        "accuracy": 77,
+        "completeness": 79,
+        "clarity": 75,
+        "professionalism": 76,
+        "relevance": 78,
+        "total_score": 77.0,
+        "reasoning": "答案准确性良好，信息量足够，清晰度尚可，专业性一般，相关性好。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 62,
-      "llm_score": 77.0,
+      "llm_score": 77.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 14:15:00",
       "notes": "有进步空间。"
     },
     {
       "eval_id": 19,
-      "llm_answer": "{\"accuracy\": 91, \"completeness\": 93, \"clarity\": 92, \"professionalism\": 94, \"relevance\": 91, \"total_score\": 92.2, \"reasoning\": \"答案非常出色，精准，全面，清晰，专业性极高，与问题紧密相关。\"}",
+      "llm_answer": {
+        "accuracy": 91,
+        "completeness": 93,
+        "clarity": 92,
+        "professionalism": 94,
+        "relevance": 91,
+        "total_score": 92.2,
+        "reasoning": "答案非常出色，精准，全面，清晰，专业性极高，与问题紧密相关。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 1,
-      "llm_score": 92.2,
+      "llm_score": 92.20,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 14:30:00",
       "notes": "顶尖表现。"
     },
     {
       "eval_id": 20,
-      "llm_answer": "{\"accuracy\": 62, \"completeness\": 60, \"clarity\": 58, \"professionalism\": 55, \"relevance\": 60, \"total_score\": 59.0, \"reasoning\": \"答案存在较多错误和不足，信息不完整，表述模糊，专业性差，相关性低。\"}",
+      "llm_answer": {
+        "accuracy": 62,
+        "completeness": 60,
+        "clarity": 58,
+        "professionalism": 55,
+        "relevance": 60,
+        "total_score": 59.0,
+        "reasoning": "答案存在较多错误和不足，信息不完整，表述模糊，专业性差，相关性低。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 77,
-      "llm_score": 59.0,
+      "llm_score": 59.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 14:45:00",
       "notes": "急需大幅度改进。"
     },
     {
       "eval_id": 21,
-      "llm_answer": "{\"accuracy\": 86, \"completeness\": 89, \"clarity\": 87, \"professionalism\": 88, \"relevance\": 85, \"total_score\": 87.0, \"reasoning\": \"答案准确，内容丰富，表达清晰，专业性好，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 86,
+        "completeness": 89,
+        "clarity": 87,
+        "professionalism": 88,
+        "relevance": 85,
+        "total_score": 87.0,
+        "reasoning": "答案准确，内容丰富，表达清晰，专业性好，相关性高。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 13,
-      "llm_score": 87.0,
+      "llm_score": 87.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 15:00:00",
       "notes": "整体表现优秀。"
     },
     {
       "eval_id": 22,
-      "llm_answer": "{\"accuracy\": 73, \"completeness\": 76, \"clarity\": 74, \"professionalism\": 71, \"relevance\": 75, \"total_score\": 73.8, \"reasoning\": \"答案基本准确，信息量中等，表达清晰度尚可，专业性一般，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 73,
+        "completeness": 76,
+        "clarity": 74,
+        "professionalism": 71,
+        "relevance": 75,
+        "total_score": 73.8,
+        "reasoning": "答案基本准确，信息量中等，表达清晰度尚可，专业性一般，相关性良好。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 48,
-      "llm_score": 73.8,
+      "llm_score": 73.80,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 15:15:00",
       "notes": "有进步空间。"
     },
     {
       "eval_id": 23,
-      "llm_answer": "{\"accuracy\": 94, \"completeness\": 96, \"clarity\": 95, \"professionalism\": 97, \"relevance\": 94, \"total_score\": 95.2, \"reasoning\": \"答案堪称完美，各方面都达到了最高标准，提供了无懈可击的回答。\"}",
+      "llm_answer": {
+        "accuracy": 94,
+        "completeness": 96,
+        "clarity": 95,
+        "professionalism": 97,
+        "relevance": 94,
+        "total_score": 95.2,
+        "reasoning": "答案堪称完美，各方面都达到了最高标准，提供了无懈可击的回答。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 6,
-      "llm_score": 95.2,
+      "llm_score": 95.20,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 15:30:00",
       "notes": "极致表现！"
     },
     {
       "eval_id": 24,
-      "llm_answer": "{\"accuracy\": 58, \"completeness\": 60, \"clarity\": 55, \"professionalism\": 52, \"relevance\": 57, \"total_score\": 56.4, \"reasoning\": \"答案存在较多不足，准确性低，完整性差，清晰度欠佳，专业性弱，相关性一般。\"}",
+      "llm_answer": {
+        "accuracy": 58,
+        "completeness": 60,
+        "clarity": 55,
+        "professionalism": 52,
+        "relevance": 57,
+        "total_score": 56.4,
+        "reasoning": "答案存在较多不足，准确性低，完整性差，清晰度欠佳，专业性弱，相关性一般。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 82,
-      "llm_score": 56.4,
+      "llm_score": 56.40,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 15:45:00",
       "notes": "仍需大量改进。"
     },
     {
       "eval_id": 25,
-      "llm_answer": "{\"accuracy\": 82, \"completeness\": 84, \"clarity\": 81, \"professionalism\": 83, \"relevance\": 85, \"total_score\": 83.0, \"reasoning\": \"答案准确，内容较完整，清晰度好，专业性良好，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 82,
+        "completeness": 84,
+        "clarity": 81,
+        "professionalism": 83,
+        "relevance": 85,
+        "total_score": 83.0,
+        "reasoning": "答案准确，内容较完整，清晰度好，专业性良好，相关性高。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 25,
-      "llm_score": 83.0,
+      "llm_score": 83.00,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 16:00:00",
       "notes": "良好表现。"
     },
     {
       "eval_id": 26,
-      "llm_answer": "{\"accuracy\": 76, \"completeness\": 77, \"clarity\": 75, \"professionalism\": 74, \"relevance\": 78, \"total_score\": 76.0, \"reasoning\": \"答案准确，信息完整性中等，清晰度尚可，专业性一般，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 76,
+        "completeness": 77,
+        "clarity": 75,
+        "professionalism": 74,
+        "relevance": 78,
+        "total_score": 76.0,
+        "reasoning": "答案准确，信息完整性中等，清晰度尚可，专业性一般，相关性良好。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 60,
-      "llm_score": 76.0,
+      "llm_score": 76.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 16:15:00",
       "notes": "稳定输出。"
     },
     {
       "eval_id": 27,
-      "llm_answer": "{\"accuracy\": 90, \"completeness\": 92, \"clarity\": 91, \"professionalism\": 93, \"relevance\": 90, \"total_score\": 91.2, \"reasoning\": \"答案非常准确，内容全面，表达清晰且专业，与问题高度相关。\"}",
+      "llm_answer": {
+        "accuracy": 90,
+        "completeness": 92,
+        "clarity": 91,
+        "professionalism": 93,
+        "relevance": 90,
+        "total_score": 91.2,
+        "reasoning": "答案非常准确，内容全面，表达清晰且专业，与问题高度相关。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 9,
-      "llm_score": 91.2,
+      "llm_score": 91.20,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 16:30:00",
       "notes": "出色表现。"
     },
     {
       "eval_id": 28,
-      "llm_answer": "{\"accuracy\": 67, \"completeness\": 69, \"clarity\": 66, \"professionalism\": 64, \"relevance\": 68, \"total_score\": 66.8, \"reasoning\": \"答案准确性一般，信息有欠缺，表达略模糊，专业性不足，相关性中等。\"}",
+      "llm_answer": {
+        "accuracy": 67,
+        "completeness": 69,
+        "clarity": 66,
+        "professionalism": 64,
+        "relevance": 68,
+        "total_score": 66.8,
+        "reasoning": "答案准确性一般，信息有欠缺，表达略模糊，专业性不足，相关性中等。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 33,
-      "llm_score": 66.8,
+      "llm_score": 66.80,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 16:45:00",
       "notes": "有进步空间。"
     },
     {
       "eval_id": 29,
-      "llm_answer": "{\"accuracy\": 88, \"completeness\": 90, \"clarity\": 89, \"professionalism\": 91, \"relevance\": 88, \"total_score\": 89.2, \"reasoning\": \"答案精准，信息完整，表达流畅，专业性高，相关性强。\"}",
+      "llm_answer": {
+        "accuracy": 88,
+        "completeness": 90,
+        "clarity": 89,
+        "professionalism": 91,
+        "relevance": 88,
+        "total_score": 89.2,
+        "reasoning": "答案精准，信息完整，表达流畅，专业性高，相关性强。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 47,
-      "llm_score": 89.2,
+      "llm_score": 89.20,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 17:00:00",
       "notes": "非常可靠。"
     },
     {
       "eval_id": 30,
-      "llm_answer": "{\"accuracy\": 79, \"completeness\": 80, \"clarity\": 78, \"professionalism\": 77, \"relevance\": 81, \"total_score\": 79.0, \"reasoning\": \"答案准确，信息完整性良好，清晰度尚可，专业性中等，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 79,
+        "completeness": 80,
+        "clarity": 78,
+        "professionalism": 77,
+        "relevance": 81,
+        "total_score": 79.0,
+        "reasoning": "答案准确，信息完整性良好，清晰度尚可，专业性中等，相关性良好。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 71,
-      "llm_score": 79.0,
+      "llm_score": 79.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 17:15:00",
       "notes": "中等偏上。"
     },
     {
       "eval_id": 31,
-      "llm_answer": "{\"accuracy\": 93, \"completeness\": 95, \"clarity\": 94, \"professionalism\": 96, \"relevance\": 93, \"total_score\": 94.2, \"reasoning\": \"答案卓越，内容详尽且精准，表达极其清晰，专业性极高，与问题完美匹配。\"}",
+      "llm_answer": {
+        "accuracy": 93,
+        "completeness": 95,
+        "clarity": 94,
+        "professionalism": 96,
+        "relevance": 93,
+        "total_score": 94.2,
+        "reasoning": "答案卓越，内容详尽且精准，表达极其清晰，专业性极高，与问题完美匹配。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 2,
-      "llm_score": 94.2,
+      "llm_score": 94.20,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 17:30:00",
       "notes": "非常优秀！"
     },
     {
       "eval_id": 32,
-      "llm_answer": "{\"accuracy\": 57, \"completeness\": 59, \"clarity\": 56, \"professionalism\": 53, \"relevance\": 58, \"total_score\": 56.6, \"reasoning\": \"答案存在较多不足，准确性低，信息不全，表述模糊，专业性差，相关性一般。\"}",
+      "llm_answer": {
+        "accuracy": 57,
+        "completeness": 59,
+        "clarity": 56,
+        "professionalism": 53,
+        "relevance": 58,
+        "total_score": 56.6,
+        "reasoning": "答案存在较多不足，准确性低，信息不全，表述模糊，专业性差，相关性一般。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 89,
-      "llm_score": 56.6,
+      "llm_score": 56.60,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 17:45:00",
       "notes": "需要大幅度改进。"
     },
     {
       "eval_id": 33,
-      "llm_answer": "{\"accuracy\": 84, \"completeness\": 87, \"clarity\": 85, \"professionalism\": 86, \"relevance\": 84, \"total_score\": 85.2, \"reasoning\": \"答案准确，内容全面，表达清晰，专业性好，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 84,
+        "completeness": 87,
+        "clarity": 85,
+        "professionalism": 86,
+        "relevance": 84,
+        "total_score": 85.2,
+        "reasoning": "答案准确，内容全面，表达清晰，专业性好，相关性高。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 18,
-      "llm_score": 85.2,
+      "llm_score": 85.20,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 18:00:00",
       "notes": "表现良好。"
     },
     {
       "eval_id": 34,
-      "llm_answer": "{\"accuracy\": 71, \"completeness\": 74, \"clarity\": 72, \"professionalism\": 70, \"relevance\": 73, \"total_score\": 72.0, \"reasoning\": \"答案基本准确，信息量中等，表达清晰度尚可，专业性一般，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 71,
+        "completeness": 74,
+        "clarity": 72,
+        "professionalism": 70,
+        "relevance": 73,
+        "total_score": 72.0,
+        "reasoning": "答案基本准确，信息量中等，表达清晰度尚可，专业性一般，相关性良好。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 53,
-      "llm_score": 72.0,
+      "llm_score": 72.00,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 18:15:00",
       "notes": "有进步空间。"
     },
     {
       "eval_id": 35,
-      "llm_answer": "{\"accuracy\": 95, \"completeness\": 97, \"clarity\": 96, \"professionalism\": 98, \"relevance\": 95, \"total_score\": 96.2, \"reasoning\": \"无懈可击的答案，各方面都达到了极致，提供了最顶尖的解决方案。\"}",
+      "llm_answer": {
+        "accuracy": 95,
+        "completeness": 97,
+        "clarity": 96,
+        "professionalism": 98,
+        "relevance": 95,
+        "total_score": 96.2,
+        "reasoning": "无懈可击的答案，各方面都达到了极致，提供了最顶尖的解决方案。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 5,
-      "llm_score": 96.2,
+      "llm_score": 96.20,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 18:30:00",
       "notes": "完美！"
     },
     {
       "eval_id": 36,
-      "llm_answer": "{\"accuracy\": 59, \"completeness\": 61, \"clarity\": 57, \"professionalism\": 54, \"relevance\": 59, \"total_score\": 58.0, \"reasoning\": \"答案错误较多，信息不全，表述混乱，专业性差，相关性低。\"}",
+      "llm_answer": {
+        "accuracy": 59,
+        "completeness": 61,
+        "clarity": 57,
+        "professionalism": 54,
+        "relevance": 59,
+        "total_score": 58.0,
+        "reasoning": "答案错误较多，信息不全，表述混乱，专业性差，相关性低。"
+      },
       "llm_type_id": 3,
       "std_ans_id": 94,
-      "llm_score": 58.0,
+      "llm_score": 58.00,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 18:45:00",
       "notes": "急需改进。"
     },
     {
       "eval_id": 37,
-      "llm_answer": "{\"accuracy\": 81, \"completeness\": 83, \"clarity\": 80, \"professionalism\": 82, \"relevance\": 84, \"total_score\": 82.0, \"reasoning\": \"答案准确，内容较完整，清晰度好，专业性良好，相关性高。\"}",
+      "llm_answer": {
+        "accuracy": 81,
+        "completeness": 83,
+        "clarity": 80,
+        "professionalism": 82,
+        "relevance": 84,
+        "total_score": 82.0,
+        "reasoning": "答案准确，内容较完整，清晰度好，专业性良好，相关性高。"
+      },
       "llm_type_id": 1,
       "std_ans_id": 28,
-      "llm_score": 82.0,
+      "llm_score": 82.00,
       "evaluated_by": 101,
       "evaluation_date": "2025-06-21 19:00:00",
       "notes": "良好表现。"
     },
     {
       "eval_id": 38,
-      "llm_answer": "{\"accuracy\": 75, \"completeness\": 78, \"clarity\": 76, \"professionalism\": 74, \"relevance\": 77, \"total_score\": 76.0, \"reasoning\": \"答案准确，信息完整性中等，清晰度尚可，专业性一般，相关性良好。\"}",
+      "llm_answer": {
+        "accuracy": 75,
+        "completeness": 78,
+        "clarity": 76,
+        "professionalism": 74,
+        "relevance": 77,
+        "total_score": 76.0,
+        "reasoning": "答案准确，信息完整性中等，清晰度尚可，专业性一般，相关性良好。"
+      },
       "llm_type_id": 2,
       "std_ans_id": 65,
-      "llm_score": 76.0,
+      "llm_score": 76.00,
       "evaluated_by": 102,
       "evaluation_date": "2025-06-21 19:15:00",
       "notes": "稳定输出。"
     },
     {
       "eval_id": 39,
-      "llm_answer": "{\"accuracy\": 89, \"completeness\": 91, \"clarity\": 90, \"professionalism\": 92, \"relevance\": 89, \"total_score\": 90.2, \"reasoning\": \"答案精准，信息完整，表达流畅\"}",
+      "llm_answer": {
+        "accuracy": 89,
+        "completeness": 91,
+        "clarity": 90,
+        "professionalism": 92,
+        "relevance": 89,
+        "total_score": 90.2,
+        "reasoning": "答案精准，信息完整，表达流畅"
+      },
       "llm_type_id": 3,
       "std_ans_id": 100,
-      "llm_score": 90.2,
+      "llm_score": 90.20,
       "evaluated_by": 103,
       "evaluation_date": "2025-06-21 19:30:00",
       "notes": "非常可靠。"
     }
   ],
+    
+
   "standard_pair": [
     {
       "pair_id": 1,

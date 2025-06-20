@@ -279,7 +279,7 @@ if query_selected:
                     st.success(f"{message} - 找到 {total_count} 条记录")
                     
                     if results:
-                        columns = ["问题内容",  "标准答案内容"]
+                        columns = ["问题内容",  "标准答案内容","1"]
                         
                         # 美化数据展示
                         st.markdown("#### 查询结果")
@@ -1420,11 +1420,13 @@ elif menu == "LLM评估":
                     st.session_state.show_prompt_preview = True
                 
                 if st.session_state.get('show_prompt_preview', False):
-                    with st.expander("📄 完整Prompt预览", expanded=True):
-                        sample_question = "什么是数据库索引？"
-                        sample_answer = "数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。"
-                        
-                        preview_prompt = f"""
+                    st.markdown("---")
+                    st.markdown("#### 📄 完整Prompt预览")
+                    
+                    sample_question = "什么是数据库索引？"
+                    sample_answer = "数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。"
+                    
+                    preview_prompt = f"""
 你是一个专业的问答质量评估专家。请评估以下问答对的质量。
 
 【问题】
@@ -1457,82 +1459,84 @@ elif menu == "LLM评估":
 }}
 
 注意：total_score是五个维度分数的平均值。请确保JSON格式正确，字段名使用英文。
-                        """
-                        st.code(preview_prompt, language="markdown")
-                        
-                        col_close, col_test = st.columns([1, 1])
-                        with col_close:
-                            if st.button("关闭预览"):
-                                st.session_state.show_prompt_preview = False
-                                st.rerun()
-                        with col_test:
-                            if st.button("🧪 测试此Prompt") and LLM_EVALUATOR_AVAILABLE:
-                                st.session_state.test_prompt = True
+                    """
+                    st.code(preview_prompt, language="markdown")
+                    
+                    col_close, col_test = st.columns([1, 1])
+                    with col_close:
+                        if st.button("关闭预览"):
+                            st.session_state.show_prompt_preview = False
+                            st.rerun()
+                    with col_test:
+                        if st.button("🧪 测试此Prompt") and LLM_EVALUATOR_AVAILABLE:
+                            st.session_state.test_prompt = True
                 
                 # Prompt测试功能
                 if st.session_state.get('test_prompt', False):
-                    with st.expander("🧪 Prompt测试结果", expanded=True):
-                        test_question = st.text_input("测试问题", value="什么是数据库索引？")
-                        test_answer = st.text_area("测试答案", value="数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。")
-                        
-                        col_test_model, col_test_btn = st.columns([1, 1])
-                        with col_test_model:
-                            test_model = st.selectbox("测试模型", available_models, key="test_model_select")
-                        with col_test_btn:
-                            if st.button("执行测试"):
-                                if test_model.startswith("gpt") and not os.getenv("OPENAI_API_KEY"):
-                                    st.error("❌ 请配置OPENAI_API_KEY环境变量")
-                                elif test_model.startswith("claude") and not os.getenv("ANTHROPIC_API_KEY"):
-                                    st.error("❌ 请配置ANTHROPIC_API_KEY环境变量")
-                                else:
-                                    with st.spinner("测试中..."):
-                                        try:
-                                            # 直接调用评估器测试
-                                            test_result = evaluator.evaluate_pair(
-                                                test_model, 
-                                                test_question, 
-                                                test_answer, 
-                                                criteria,
-                                                custom_temperature
-                                            )
-                                            
-                                            if test_result['success']:
-                                                st.success("✅ 测试成功")
-                                                
-                                                # 显示评估结果
-                                                col_scores, col_raw = st.columns([1, 1])
-                                                
-                                                with col_scores:
-                                                    st.markdown("**评估分数:**")
-                                                    eval_data = test_result['evaluation']
-                                                    st.metric("总分", f"{eval_data['total_score']:.1f}")
-                                                    
-                                                    score_col1, score_col2 = st.columns(2)
-                                                    with score_col1:
-                                                        st.metric("准确性", f"{eval_data['accuracy']:.0f}")
-                                                        st.metric("完整性", f"{eval_data['completeness']:.0f}")
-                                                        st.metric("清晰度", f"{eval_data['clarity']:.0f}")
-                                                    with score_col2:
-                                                        st.metric("专业性", f"{eval_data['professionalism']:.0f}")
-                                                        st.metric("相关性", f"{eval_data['relevance']:.0f}")
-                                                    
-                                                    st.markdown("**评价理由:**")
-                                                    st.write(eval_data.get('reasoning', '无'))
-                                                
-                                                with col_raw:
-                                                    st.markdown("**原始响应:**")
-                                                    st.code(test_result['raw_response'], language="text")
-                                            else:
-                                                st.error(f"❌ 测试失败: {test_result.get('error', '未知错误')}")
-                                                if 'raw_response' in test_result:
-                                                    st.text_area("原始响应", test_result['raw_response'], height=100)
+                    st.markdown("---")
+                    st.markdown("#### 🧪 Prompt测试")
+                    
+                    test_question = st.text_input("测试问题", value="什么是数据库索引？")
+                    test_answer = st.text_area("测试答案", value="数据库索引是一种数据结构，用于快速定位和访问数据库表中的特定行。")
+                    
+                    col_test_model, col_test_btn = st.columns([1, 1])
+                    with col_test_model:
+                        test_model = st.selectbox("测试模型", available_models, key="test_model_select")
+                    with col_test_btn:
+                        if st.button("执行测试"):
+                            if test_model.startswith("gpt") and not os.getenv("OPENAI_API_KEY"):
+                                st.error("❌ 请配置OPENAI_API_KEY环境变量")
+                            elif test_model.startswith("claude") and not os.getenv("ANTHROPIC_API_KEY"):
+                                st.error("❌ 请配置ANTHROPIC_API_KEY环境变量")
+                            else:
+                                with st.spinner("测试中..."):
+                                    try:
+                                        # 直接调用评估器测试
+                                        test_result = evaluator.evaluate_pair(
+                                            test_model, 
+                                            test_question, 
+                                            test_answer, 
+                                            criteria,
+                                            custom_temperature
+                                        )
                                         
-                                        except Exception as e:
-                                            st.error(f"❌ 测试出错: {str(e)}")
-                        
-                        if st.button("关闭测试"):
-                            st.session_state.test_prompt = False
-                            st.rerun()
+                                        if test_result['success']:
+                                            st.success("✅ 测试成功")
+                                            
+                                            # 显示评估结果
+                                            col_scores, col_raw = st.columns([1, 1])
+                                            
+                                            with col_scores:
+                                                st.markdown("**评估分数:**")
+                                                eval_data = test_result['evaluation']
+                                                st.metric("总分", f"{eval_data['total_score']:.1f}")
+                                                
+                                                score_col1, score_col2 = st.columns(2)
+                                                with score_col1:
+                                                    st.metric("准确性", f"{eval_data['accuracy']:.0f}")
+                                                    st.metric("完整性", f"{eval_data['completeness']:.0f}")
+                                                    st.metric("清晰度", f"{eval_data['clarity']:.0f}")
+                                                with score_col2:
+                                                    st.metric("专业性", f"{eval_data['professionalism']:.0f}")
+                                                    st.metric("相关性", f"{eval_data['relevance']:.0f}")
+                                                
+                                                st.markdown("**评价理由:**")
+                                                st.write(eval_data.get('reasoning', '无'))
+                                            
+                                            with col_raw:
+                                                st.markdown("**原始响应:**")
+                                                st.code(test_result['raw_response'], language="text")
+                                        else:
+                                            st.error(f"❌ 测试失败: {test_result.get('error', '未知错误')}")
+                                            if 'raw_response' in test_result:
+                                                st.text_area("原始响应", test_result['raw_response'], height=100)
+                                    
+                                    except Exception as e:
+                                        st.error(f"❌ 测试出错: {str(e)}")
+                    
+                    if st.button("关闭测试"):
+                        st.session_state.test_prompt = False
+                        st.rerun()
                 
             # 评估配置摘要
             st.markdown("---")
@@ -1563,7 +1567,7 @@ elif menu == "LLM评估":
                 - 模式: {prompt_template_option}
                 - 评估标准: {criteria_preview}
                 """)
-            
+                
             # 预估成本显示
             if eval_option == "评估所有标准问答对":
                 # 获取总数
