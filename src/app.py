@@ -50,35 +50,35 @@ st.set_page_config(
 #     st.stop()
 
 # 检查登录状态
-# if not require_login():
-#     # 显示登录页面
-#     col1, col2, col3 = st.columns([1, 2, 1])
+if not require_login():
+    # 显示登录页面
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-#     with col2:
-#         st.title("🔐 LLM问答评估系统")
-#         st.markdown("---")
-#         st.markdown("**请登录以继续使用系统**")
+    with col2:
+        st.title("🔐 LLM问答评估系统")
+        st.markdown("---")
+        st.markdown("**请登录以继续使用系统**")
         
-#         # 显示注册表单或登录表单
-#         if st.session_state.get('show_register', False):
-#             show_register_form()
-#         else:
-#             user_info = show_login_form()
-#             if user_info:
-#                 st.session_state.user_info = user_info
-#                 st.rerun()
+        # 显示注册表单或登录表单
+        if st.session_state.get('show_register', False):
+            show_register_form()
+        else:
+            user_info = show_login_form()
+            if user_info:
+                st.session_state.user_info = user_info
+                st.rerun()
     
-#     st.stop()
+    st.stop()
 
 # 用户已登录，显示主界面
-# user_info = st.session_state.user_info
+user_info = st.session_state.user_info
 
 # 测试用
-user_info = {
-    'user_id': 1,
-    'username': 'admin',
-    'role': 'admin'
-}
+# user_info = {
+#     'user_id': 1,
+#     'username': 'admin',
+#     'role': 'admin'
+# }
 
 # 应用标题
 col1, col2 = st.columns([3, 1])
