@@ -263,6 +263,9 @@ class LLMEvaluator:
                 evaluation = json.loads(json_str)
                 logger.info(f"解析后的JSON: {evaluation}")
                 
+                # 渲染到页面上
+                # st.write(json_str)
+                
                 # 验证和清理字段
                 evaluation = self._validate_and_clean_evaluation(evaluation)
                 
@@ -572,6 +575,7 @@ class LLMEvaluator:
                     'pair_id': pair['pair_id'],
                     'question': pair['question'][:100] + '...' if len(pair['question']) > 100 else pair['question'],
                     'score': eval_result['evaluation']['total_score'],
+                    'answer': pair['answer'],
                     'success': eval_result['success'],
                     'error': eval_result.get('error', '')
                 })

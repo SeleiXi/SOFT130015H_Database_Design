@@ -1659,15 +1659,21 @@ elif menu == "LLM评估":
                                     st.markdown("#### 评估结果详情")
                                     
                                     results_df = pd.DataFrame(result['results'])
+                                    print(results_df)
+                                    print(result)
                                     
                                     # 按成功/失败分组显示
                                     success_results = results_df[results_df['success'] == True]
+                                    # print(success_results)
                                     fail_results = results_df[results_df['success'] == False]
                                     
                                     if len(success_results) > 0:
                                         st.markdown("**成功评估的问答对:**")
                                         st.dataframe(
-                                            success_results[['pair_id', 'question', 'score']],
+                                            success_results[['pair_id', 'question','answer', 'score']],
+                                            # 展示模型的回答
+                                            
+                                            
                                             use_container_width=True
                                         )
                                     
