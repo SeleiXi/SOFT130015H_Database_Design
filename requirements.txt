@@ -10,3 +10,6 @@ openai
 anthropic
 python-dotenv
 plotly
+bcrypt==4.1.2
+PyJWT==2.8.0
+streamlit-authenticator==0.2.3

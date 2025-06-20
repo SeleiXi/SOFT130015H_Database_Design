@@ -101,8 +101,14 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS User (
             user_id INT PRIMARY KEY AUTO_INCREMENT,
+            username VARCHAR(50) NOT NULL UNIQUE,
             name VARCHAR(100) NOT NULL,
-            role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'evaluator', 'guest'))
+            email VARCHAR(100) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'evaluator', 'guest')),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP NULL,
+            is_active BOOLEAN DEFAULT TRUE
         )
         """,
         """
@@ -726,4 +732,67 @@ def get_evaluation_score_distribution():
     if success:
         return True, "查询成功", result
     else:
-        return False, result, [] 
+        return False, result, []
+
+# 用户管理相关函数
+def get_users_list(page=1, page_size=10):
+    """获取用户列表（管理员功能）"""
+    query = """
+    SELECT 
+        user_id,
+        username,
+        name,
+        email,
+        role,
+        created_at,
+        last_login,
+        is_active
+    FROM User
+    ORDER BY created_at DESC
+    """
+    return get_paginated_query(query, None, page, page_size)
+
+def get_user_activity_stats():
+    """获取用户活动统计"""
+    stats_queries = {
+        "总用户数": "SELECT COUNT(*) FROM User",
+        "活跃用户数": "SELECT COUNT(*) FROM User WHERE is_active = TRUE",
+        "管理员数": "SELECT COUNT(*) FROM User WHERE role = 'admin'",
+        "评估员数": "SELECT COUNT(*) FROM User WHERE role = 'evaluator'",
+        "访客数": "SELECT COUNT(*) FROM User WHERE role = 'guest'",
+        "今日登录": "SELECT COUNT(*) FROM User WHERE DATE(last_login) = CURDATE()",
+        "本周登录": "SELECT COUNT(*) FROM User WHERE last_login >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
+        "本月登录": "SELECT COUNT(*) FROM User WHERE last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    }
+    
+    results = {}
+    for stat_name, query in stats_queries.items():
+        success, result = execute_query(query, None, True)
+        if success and result:
+            results[stat_name] = result[0][0]
+        else:
+            results[stat_name] = 0
+    
+    return results
+
+def get_user_login_history(page=1, page_size=10):
+    """获取用户登录历史"""
+    query = """
+    SELECT 
+        u.user_id,
+        u.username,
+        u.name,
+        u.role,
+        u.last_login,
+        CASE 
+            WHEN u.last_login >= DATE_SUB(NOW(), INTERVAL 1 DAY) THEN '今日活跃'
+            WHEN u.last_login >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN '本周活跃'
+            WHEN u.last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN '本月活跃'
+            WHEN u.last_login IS NOT NULL THEN '较久未登录'
+            ELSE '从未登录'
+        END as activity_status
+    FROM User u
+    WHERE u.is_active = TRUE
+    ORDER BY u.last_login DESC
+    """
+    return get_paginated_query(query, None, page, page_size) 

@@ -1,0 +1,30 @@
+# 数据库配置
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_NAME=your_database_name
+
+# JWT配置
+JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION_HOURS=24
+
+# 应用配置
+APP_DEBUG=False
+APP_HOST=localhost
+APP_PORT=8501
+
+# 安全配置
+BCRYPT_ROUNDS=12
+SESSION_TIMEOUT=3600
+
+# LLM API配置
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# 邮件配置（可选，用于发送注册确认等）
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password 

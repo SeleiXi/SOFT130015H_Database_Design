@@ -12,6 +12,10 @@ from database import (create_tables, get_connection, get_table_names, get_table_
                      get_orphan_records, get_evaluation_score_distribution) # 导入新的查询函数
 from utils import show_success_message, show_error_message, show_table_data, show_table_schema, download_sample_json, get_table_schema, show_warning_message
 
+# 导入认证模块
+from components.auth_ui import auth_ui
+from auth import auth_manager
+
 # 导入LLM评估模块
 try:
     from llm_evaluator import (
@@ -31,6 +35,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# 首先检查用户认证
+if not auth_ui.show_auth_page():
+    st.stop()
 
 # 应用标题
 st.title("LLM问答评估系统")
@@ -58,11 +66,29 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+    # 获取当前用户信息
+    current_user = auth_ui.get_current_user()
+    user_role = current_user['role'] if current_user else 'guest'
+    
+    # 调试信息：显示当前用户状态
+    st.write(f"🔍 调试信息：当前用户: {current_user['username'] if current_user else '未登录'}, 角色: {user_role}")
+    
+    # 根据用户角色显示不同的菜单选项
+    if user_role == 'admin':
+        menu_options = ["数据库管理", "数据爬取", "LLM评估", "数据导入", "用户管理"]
+    elif user_role == 'evaluator':
+        menu_options = ["数据库管理", "LLM评估", "数据导入"]
+    else:  # guest 或未登录用户
+        menu_options = ["数据库管理"]
+    
     menu = st.radio(
         "功能菜单选项",
-        ["数据库管理", "数据爬取", "LLM评估", "数据导入"],
+        menu_options,
         label_visibility="collapsed"
     )
+    
+    # 显示用户信息
+    auth_ui.show_user_info_sidebar()
     
     # 显示系统状态和查询菜单
     st.markdown("---")
@@ -117,6 +143,10 @@ query_selected = (basic_query != "请选择查询类型" or
                  relation_query != "请选择查询类型" or 
                  stats_query != "请选择分析类型" or 
                  search_query != "请选择搜索类型")
+
+# 调试信息：显示查询选择状态
+st.write(f"🔍 查询调试: basic_query={basic_query}, relation_query={relation_query}, stats_query={stats_query}, search_query={search_query}")
+st.write(f"🔍 query_selected = {query_selected}")
 
 if query_selected:
     # 分页控制函数
@@ -1550,3 +1580,49 @@ elif menu == "数据导入":
     with tab3:
         st.subheader("导入历史")
         st.info("导入历史功能将在下一版本中提供")
+
+# 处理特殊页面显示
+if 'show_profile' in st.session_state and st.session_state.show_profile:
+    st.session_state.show_profile = False
+    auth_ui.show_user_profile()
+    st.stop()
+
+if 'show_user_mgmt' in st.session_state and st.session_state.show_user_mgmt:
+    st.session_state.show_user_mgmt = False
+    auth_ui.show_user_management()
+    st.stop()
+
+# 处理用户管理菜单
+if menu == "用户管理":
+    # 检查管理员权限
+    current_user = auth_ui.get_current_user()
+    if not current_user or current_user['role'] != 'admin':
+        st.error("❌ 权限不足：只有管理员可以访问用户管理功能")
+        st.stop()
+    
+    auth_ui.show_user_management()
+    st.stop()
+
+# 为其他功能添加权限检查（但不阻止页面其他内容显示）
+if menu == "数据爬取":
+    current_user = auth_ui.get_current_user()
+    if not current_user or not auth_manager.check_permission(current_user['role'], 'manage_data'):
+        st.error("❌ 权限不足：您没有数据爬取权限")
+        st.info("💡 提示：请联系管理员获取相应权限，或选择其他功能")
+    else:
+        st.info("数据爬取功能开发中...")
+
+elif menu == "LLM评估":
+    current_user = auth_ui.get_current_user()
+    if not current_user or not auth_manager.check_permission(current_user['role'], 'llm_evaluation'):
+        st.error("❌ 权限不足：您没有LLM评估权限")
+        st.info("💡 提示：请联系管理员获取相应权限，或选择其他功能")
+    else:
+        st.info("LLM评估功能开发中...")
+
+elif menu == "数据导入":
+    current_user = auth_ui.get_current_user()
+    if not current_user or not auth_manager.check_permission(current_user['role'], 'manage_data'):
+        st.error("❌ 权限不足：您没有数据导入权限")
+        st.info("💡 提示：请联系管理员获取相应权限，或选择其他功能")
+    # 如果有权限则继续执行原来的数据导入逻辑（已在前面代码中）
