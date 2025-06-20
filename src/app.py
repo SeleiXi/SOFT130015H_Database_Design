@@ -41,9 +41,9 @@ st.set_page_config(
 )
 
 # 初始化认证系统
-if not initialize_auth_system():
-    st.error("❌ 认证系统初始化失败，请检查数据库连接")
-    st.stop()
+# if not initialize_auth_system():
+#     st.error("❌ 认证系统初始化失败，请检查数据库连接")
+#     st.stop()
 
 # 检查登录状态
 if not require_login():
@@ -180,21 +180,7 @@ with st.sidebar:
     # 显示认证状态
     show_auth_sidebar()
     
-    # 数据库连接状态
-    st.markdown("### 📊 系统状态")
-    conn = get_connection()
-    if conn:
-        st.success("✅ 数据库连接正常")
-        conn.close()
-    else:
-        st.error("❌ 数据库连接失败")
     
-    # 表数量
-    tables = get_table_names()
-    if tables:
-        st.info(f"📑 当前数据库表数量: {len(tables)}")
-    else:
-        st.warning("⚠️ 数据库中没有表")
 
 # 查询功能处理 - 检查是否有查询选择
 query_selected = (basic_query != "请选择查询类型" or 
