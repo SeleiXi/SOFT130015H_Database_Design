@@ -1579,7 +1579,7 @@ elif menu == "LLM评估":
             if eval_option != "评估所有标准问答对":
                 expected_count = eval_limit if 'eval_limit' in locals() else 1
                 model_costs = {
-                    "gpt-4": 30.0,
+                    "GPT-4": 30.0,
                     "gpt-3.5-turbo": 0.5,
                     "claude-3-opus": 15.0,
                     "claude-3-sonnet": 3.0
@@ -1853,13 +1853,28 @@ elif menu == "LLM评估":
                             
                             # 生成对比图表
                             if "平均分数" in comparison_metrics and len(comp_df) > 0:
-                                fig_comparison = px.radar(
-                                    comp_df,
-                                    r='avg_score',
-                                    theta='model_name',
-                                    title="模型平均分数雷达图",
-                                    range_r=[0, 100]
+                                # 使用plotly.graph_objects创建雷达图
+                                import plotly.graph_objects as go
+                                
+                                fig_comparison = go.Figure()
+                                
+                                fig_comparison.add_trace(go.Scatterpolar(
+                                    r=comp_df['avg_score'].tolist(),
+                                    theta=comp_df['model_name'].tolist(),
+                                    fill='toself',
+                                    name='平均分数'
+                                ))
+                                
+                                fig_comparison.update_layout(
+                                    polar=dict(
+                                        radialaxis=dict(
+                                            visible=True,
+                                            range=[0, 100]
+                                        )),
+                                    showlegend=True,
+                                    title="模型平均分数雷达图"
                                 )
+                                
                                 st.plotly_chart(fig_comparison, use_container_width=True)
                             
                             # 显示详细对比表

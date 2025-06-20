@@ -37,10 +37,10 @@ class LLMEvaluator:
     def __init__(self):
         """初始化评估器"""
         self.models = {
-            "gpt-4": self._init_gpt4,
-            "gpt-3.5-turbo": self._init_gpt35,
-            "claude-3-opus": self._init_claude_opus,
-            "claude-3-sonnet": self._init_claude_sonnet
+            "GPT-4": self._init_gpt4,
+            "GPT-3.5-Turbo": self._init_gpt35,
+            "Claude-3-Opus": self._init_claude_opus,
+            "Claude-3-Sonnet": self._init_claude_sonnet
         }
         
         # 评估标准提示模板
