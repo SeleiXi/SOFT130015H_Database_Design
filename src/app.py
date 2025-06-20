@@ -10,7 +10,8 @@ from database import (create_tables, get_connection, get_table_names, get_table_
                      get_database_statistics, get_tag_distribution, get_model_cost_analysis, 
                      get_evaluation_trends, get_answer_length_analysis, get_question_complexity_analysis,
                      get_orphan_records, get_evaluation_score_distribution) # 导入新的查询函数
-from utils import show_success_message, show_error_message, show_table_data, show_table_schema, download_sample_json, get_table_schema, show_warning_message
+from utils import (show_success_message, show_error_message, show_table_data, show_table_schema, 
+                   download_sample_json, get_table_schema, show_warning_message, safe_string, safe_text_preview)
 
 # 导入认证相关模块
 from auth import require_login, require_admin
@@ -274,26 +275,32 @@ if query_selected:
                             
                             # 使用expander展示每条记录
                             for idx, row in df.iterrows():
-                                with st.expander(f"记录 #{idx}: {row['问题内容'][:50]}{'...' if len(row['问题内容']) > 50 else ''}"):
+                                # 使用安全函数处理内容，避免None值错误
+                                question_preview = safe_text_preview(row['问题内容'], 50, "暂无问题内容")
+                                
+                                with st.expander(f"记录 #{idx}: {question_preview}"):
                                     col1, col2, col3 = st.columns([1, 1, 1])
                                     
                                     with col1:
                                         st.markdown("**问题内容:**")
-                                        st.info(row['问题内容'] if row['问题内容'] else "暂无问题内容")
+                                        question_content = safe_string(row['问题内容'], "暂无问题内容")
+                                        st.info(question_content)
                                     
                                     with col2:
                                         st.markdown("**原答案内容:**")
-                                        if row['原答案内容'] and row['原答案内容'] != 'None':
-                                            st.success(row['原答案内容'])
+                                        answer_content = safe_string(row['原答案内容'], "暂无原答案")
+                                        if answer_content != "暂无原答案":
+                                            st.success(answer_content)
                                         else:
-                                            st.warning("暂无原答案")
+                                            st.warning(answer_content)
                                     
                                     with col3:
                                         st.markdown("**标准答案内容:**")
-                                        if row['标准答案内容'] and row['标准答案内容'] != 'None':
-                                            st.success(row['标准答案内容'])
+                                        std_answer_content = safe_string(row['标准答案内容'], "暂无标准答案")
+                                        if std_answer_content != "暂无标准答案":
+                                            st.success(std_answer_content)
                                         else:
-                                            st.warning("暂无标准答案")
+                                            st.warning(std_answer_content)
                             
                             # 分页信息和控制
                             st.info(f"总记录数: {total_count} | 当前页: {st.session_state.all_qa_page}/{total_pages} | 当前显示: {len(results)} 条")

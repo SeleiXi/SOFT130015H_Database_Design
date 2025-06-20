@@ -159,3 +159,46 @@ def download_sample_json(format_type="multi_table"):
     from io import BytesIO
     data = generate_sample_data(format_type=format_type)
     return BytesIO(json.dumps(data, indent=2, ensure_ascii=False).encode()) 
+
+
+def safe_string(value, default="暂无内容", max_length=None):
+    """
+    安全处理字符串值，避免None值错误
+    
+    Args:
+        value: 待处理的值
+        default (str): 默认值
+        max_length (int): 最大长度，如果指定则会截断
+        
+    Returns:
+        str: 安全的字符串
+    """
+    if value is None:
+        result = default
+    elif value == 'None' or str(value).strip() == '':
+        result = default
+    else:
+        result = str(value)
+    
+    if max_length and len(result) > max_length:
+        result = result[:max_length] + '...'
+    
+    return result
+
+
+def safe_text_preview(text, max_length=50, default="暂无内容"):
+    """
+    生成安全的文本预览
+    
+    Args:
+        text: 原始文本
+        max_length (int): 预览最大长度
+        default (str): 默认值
+        
+    Returns:
+        str: 预览文本
+    """
+    safe_text = safe_string(text, default)
+    if len(safe_text) > max_length:
+        return safe_text[:max_length] + '...'
+    return safe_text
