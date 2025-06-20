@@ -510,15 +510,9 @@ if query_selected:
                                         st.markdown("**评估分数:**")
                                         st.metric("分数", f"{score:.1f}")
                                         
-                                        # 只显示真实的问题内容，过滤掉占位符文本
-                                        if (row['问题内容'] and 
-                                            not ('暂无关联问题' in str(row['问题内容']) or 
-                                                 '数据缺失' in str(row['问题内容']))):
-                                            st.markdown("**问题:**")
-                                            st.write(row['问题内容'])
-                                        else:
-                                            st.markdown("**问题:**")
-                                            st.warning("暂无关联问题")
+                                        # 现在所有记录都有真实的问题内容
+                                        st.markdown("**问题:**")
+                                        st.write(row['问题内容'])
                                     
                                     with col2:
                                         st.markdown("**标准答案:**")

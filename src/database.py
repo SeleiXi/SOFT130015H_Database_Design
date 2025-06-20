@@ -484,25 +484,22 @@ def get_questions_with_tags(page=1, page_size=10):
     return get_paginated_query(query, None, page, page_size)
 
 def get_llm_evaluation_results(page=1, page_size=10):
-    """获取LLM评估结果"""
-    # 使用直接关联ori_ans的查询方式，提供更详细的信息
+    """获取LLM评估结果 - 只返回有关联问题的评估记录"""
+    # 只查询有真实问题关联的评估记录
     query = """
     SELECT 
         le.eval_id,
         lt.name as llm_model,
         lt.params as model_params,
         le.llm_score,
-        COALESCE(oa.content, CONCAT('答案ID ', le.std_ans_id, ' (数据缺失)')) as standard_answer,
+        oa.content as standard_answer,
         le.llm_answer,
-        CASE 
-            WHEN oq.content IS NOT NULL THEN oq.content
-            WHEN oa.ori_ans_id IS NOT NULL THEN CONCAT('答案ID ', oa.ori_ans_id, ' 暂无关联问题')
-            ELSE CONCAT('答案ID ', le.std_ans_id, ' (数据缺失)')
-        END as question_content
+        oq.content as question_content
     FROM llm_evaluation le
     INNER JOIN llm_type lt ON le.llm_type_id = lt.llm_type_id
-    LEFT JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
-    LEFT JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
+    INNER JOIN ori_ans oa ON le.std_ans_id = oa.ori_ans_id
+    INNER JOIN ori_qs oq ON oa.ori_qs_id = oq.ori_qs_id
+    WHERE oq.content IS NOT NULL
     ORDER BY le.llm_score DESC
     """
     return get_paginated_query(query, None, page, page_size)
